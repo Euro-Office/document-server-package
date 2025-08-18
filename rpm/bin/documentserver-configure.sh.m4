@@ -211,7 +211,7 @@ create_local_configs(){
 tune_local_configs(){
 	for i in $LOCAL_CONFIG $EXAMPLE_CONFIG; do
 		if [ -f ${i} ]; then
-			chown ds:ds -R ${i}
+			chown ds:onlyoffice -R ${i}
 		fi
   	done
 }

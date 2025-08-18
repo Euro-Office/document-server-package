@@ -53,9 +53,9 @@ echo -n Generating js caches, please wait...
 echo Done
 
 # Setting user rights for files created in the previous steps
-chown -R ds:ds "$DIR/sdkjs"
-chown -R ds:ds "$DIR/server/FileConverter/bin"
-chown -R ds:ds "$DIR/fonts"
+chown -R ds:onlyoffice "$DIR/sdkjs"
+chown -R ds:onlyoffice "$DIR/server/FileConverter/bin"
+chown -R ds:onlyoffice "$DIR/fonts"
 
 #Remove gzipped files
 rm -f \

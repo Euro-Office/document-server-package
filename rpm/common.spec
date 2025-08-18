@@ -148,19 +148,19 @@ rm -rf "%{buildroot}"
 
 %files
 
-%defattr(440, ds, ds, 555)
+%defattr(440, ds, onlyoffice, 555)
 %{_localstatedir}/www/%{_ds_prefix}*/*
 
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/npm/json
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/DocService/docservice
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/converter
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/metrics
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/node_modules/modern-syslog/build/Release/core.node
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/npm/json
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/DocService/docservice
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/converter
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/metrics
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/node_modules/modern-syslog/build/Release/core.node
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
 %if %{defined example}
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}-example/example
+%attr(550, ds, onlyoffice) %{_localstatedir}/www/%{_ds_prefix}-example/example
 %endif
 
 %config %{_sysconfdir}/%{_ds_prefix}*/*.json
@@ -182,21 +182,21 @@ rm -rf "%{buildroot}"
 
 %dir
 %attr(750, %{nginx_user}, %{nginx_user}) %{_localstatedir}/cache/nginx/%{_ds_prefix}
-%attr(755, ds, ds) %{_localstatedir}/log/%{_ds_prefix}
+%attr(755, ds, onlyoffice) %{_localstatedir}/log/%{_ds_prefix}
 
-%attr(750, ds, ds) %{_localstatedir}/lib/%{_ds_prefix}
+%attr(750, ds, onlyoffice) %{_localstatedir}/lib/%{_ds_prefix}
 
 %if %{defined example}
-%attr(755, ds, ds) %{_localstatedir}/log/%{_ds_prefix}-example
-%attr(750, ds, ds) %{_localstatedir}/lib/%{_ds_prefix}-example
+%attr(755, ds, onlyoffice) %{_localstatedir}/log/%{_ds_prefix}-example
+%attr(750, ds, onlyoffice) %{_localstatedir}/lib/%{_ds_prefix}-example
 %endif
 
 %pre
 # add group and user for onlyoffice app
-getent group ds >/dev/null || groupadd -r ds
-getent passwd ds >/dev/null || useradd -r -g ds -d %{_localstatedir}/www/%{_ds_prefix}/ -s /sbin/nologin ds
+getent group onlyoffice >/dev/null || groupadd -r onlyoffice
+getent passwd ds >/dev/null || useradd -r -g onlyoffice -d %{_localstatedir}/www/%{_ds_prefix}/ -s /sbin/nologin ds
 # add nginx user to onlyoffice group to allow access nginx to onlyoffice log dir
-usermod -a -G ds %{nginx_user}
+usermod -a -G onlyoffice %{nginx_user}
 
 case "$1" in
   1)
@@ -223,11 +223,11 @@ DIR="/var/www/%{_ds_prefix}"
 ln -sf %{_libdir}/libcurl.so.4 %{_libdir}/libcurl-gnutls.so.4
 
 #make exchange dir
-mkdir -pm 755 "%{_localstatedir}/www/%{_ds_prefix}/../Data" && chown ds:ds "$_"
-chown -R ds:ds %{_localstatedir}/lib/%{_ds_prefix}
+mkdir -pm 755 "%{_localstatedir}/www/%{_ds_prefix}/../Data" && chown ds:onlyoffice "$_"
+chown -R ds:onlyoffice %{_localstatedir}/lib/%{_ds_prefix}
 
 %if %{defined example}
-chown -R ds:ds %{_localstatedir}/lib/%{_ds_prefix}-example
+chown -R ds:onlyoffice %{_localstatedir}/lib/%{_ds_prefix}-example
 %endif
 
 IS_UPGRADE="false"
@@ -248,10 +248,10 @@ if [ "$IS_UPGRADE" = "true" ]; then
 	  sed '/server_tokens/a \ \ set $secure_link_secret verysecretstring;' -i $NGINX_CONF
   fi
 
-  chown ds:ds %{_localstatedir}/log/%{_ds_prefix}/**/*.log
+  chown ds:onlyoffice %{_localstatedir}/log/%{_ds_prefix}/**/*.log
 
   %if %{defined example}
-    chown -R ds:ds %{_localstatedir}/log/%{_ds_prefix}-example
+    chown -R ds:onlyoffice %{_localstatedir}/log/%{_ds_prefix}-example
   %endif
 
   LOCAL_CONFIG="/etc/%{_ds_prefix}/local.json"

@@ -317,10 +317,11 @@ save_wopi_params() {
 
 case "$1" in
 	configure)
-		adduser --quiet --home "$DIR" --system --group ds
+		addgroup --quiet --system onlyoffice || true
+		adduser --quiet --home "$DIR" --system --ingroup onlyoffice ds
 
 		# add nginx user to M4_ONLYOFFICE_VALUE group to allow access nginx to M4_ONLYOFFICE_VALUE log dir
-		adduser --quiet www-data ds
+		adduser --quiet www-data onlyoffice
 
 		read_saved_params
 		create_local_configs
@@ -351,7 +352,7 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		mkdir -p "$DIR/fonts"
 		
 		# grand owner rights for home dir for ds user
-		chown ds:ds -R "$DIR/../Data" "$DIR"*
+		chown ds:onlyoffice -R "$DIR/../Data" "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
 
@@ -376,10 +377,10 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		CACHE_PATH="${APP_DIR}/App_Data/cache/files/data"
 		[ -d "${CACHE_PATH}" ] && rm -rf "${CACHE_PATH}"/*
 
-		chown ds:ds -R "$LOG_DIR"
-		chown ds:ds -R "$LOG_DIR-example"
-		chown ds:ds -R "$APP_DIR"
-		chown ds:ds -R "$APP_DIR-example"
+		chown ds:onlyoffice -R "$LOG_DIR"
+		chown ds:onlyoffice -R "$LOG_DIR-example"
+		chown ds:onlyoffice -R "$APP_DIR"
+		chown ds:onlyoffice -R "$APP_DIR-example"
 
 		if [ -d /etc/M4_DS_PREFIX/supervisor ]; then
 			rm -rf /etc/M4_DS_PREFIX*/supervisor
