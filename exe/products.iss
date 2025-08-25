@@ -343,7 +343,7 @@ begin
       'OpenSSL x64 3.3.0',
       Dependency_String(
         '',
-        'https://download.firedaemon.com/FireDaemon-OpenSSL/FireDaemon-OpenSSL-x64-3.3.0.exe'),
+        'https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe'),
       '',
       False,
       False);

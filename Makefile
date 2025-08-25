@@ -554,7 +554,7 @@ $(DS_BIN): documentserver
 $(WINSW)      : url = https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe
 $(CERTBOT)    : url = https://github.com/certbot/certbot/releases/download/v2.6.0/certbot-beta-installer-win_amd64_signed.exe
 $(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-26.2.1/otp_win64_26.2.1.exe
-$(OPENSSL)    : url = https://download.firedaemon.com/FireDaemon-OpenSSL/FireDaemon-OpenSSL-x64-3.3.0.exe
+$(OPENSSL)    : url = https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
 $(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-12.17-1-windows-x64.exe
 $(PYTHON)     : url = https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe
 $(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.12.11/rabbitmq-server-3.12.11.exe
