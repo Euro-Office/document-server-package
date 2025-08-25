@@ -24,7 +24,7 @@ PLUGIN_DIR="/var/www/M4_DS_PREFIX/sdkjs-plugins/"
 
 "${PLUGIN_MANAGER}" --directory=\"${PLUGIN_DIR}\" "${args[@]}"
 
-chown -R ds:ds "${PLUGIN_DIR}"
+chown -R ds:onlyoffice "${PLUGIN_DIR}"
 
 if [ "$RESTART_CONDITION" != "false" ]; then
 	if pgrep -x ""systemd"" >/dev/null; then

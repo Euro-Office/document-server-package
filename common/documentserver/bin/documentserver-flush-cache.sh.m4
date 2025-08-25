@@ -29,7 +29,7 @@ echo "set \$cache_tag \"$HASH\";" > /etc/nginx/includes/ds-cache.conf
 API_PATH="/var/www/M4_DS_PREFIX/web-apps/apps/api/documents/api.js"
 cp -f ${API_PATH}.tpl ${API_PATH}
 sed -i "s/{{HASH_POSTFIX}}/${HASH}/g" ${API_PATH}
-chown ds:ds ${API_PATH}
+chown ds:onlyoffice ${API_PATH}
 rm -f ${API_PATH}.gz
 
 if [ "$RESTART_CONDITION" != "false" ]; then
