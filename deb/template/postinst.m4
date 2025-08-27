@@ -350,11 +350,11 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		mkdir -p "$DIR/fonts"
 		
 		# grand owner rights for home dir for ds user
-		chown ds:onlyoffice -R "$DIR/../Data" "$DIR"*
+		chown ds:onlyoffice -R "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
 
-		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
+		DATA_OWNER="ds:onlyoffice"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
 
     #setup logrotate config rights
