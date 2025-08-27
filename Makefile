@@ -128,7 +128,7 @@ ifeq ($(OS),Windows_NT)
 	NGINX_LOG := logs
 	DS_ROOT := ..
 	DS_FILES := ../server
-	DS_EXAMLE := ../example
+	DS_EXAMPLE := ../example
 	DEV_NULL := nul
 	ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
 		ARCHITECTURE := 64
@@ -150,7 +150,7 @@ else
 		NGINX_LOG := /var/log/$(DS_PREFIX)
 		DS_ROOT := /var/www/$(DS_PREFIX)
 		DS_FILES := /var/lib/$(DS_PREFIX)
-		DS_EXAMLE := /var/www/$(DS_PREFIX)-example
+		DS_EXAMPLE := /var/www/$(DS_PREFIX)-example
 		DEV_NULL := /dev/null
 	endif
 	ifeq ($(UNAME_S),Darwin)
@@ -164,7 +164,7 @@ else
 		NGINX_CASH := /var/cache/nginx/onlyoffice/documentserver/
 		DS_ROOT := /var/www/onlyoffice/documentserver/
 		DS_FILES := /var/lib/onlyoffice/documentserver/
-		DS_EXAMLE := /var/www/onlyoffice/documentserver-example
+		DS_EXAMPLE := /var/www/onlyoffice/documentserver-example
 		DEV_NULL := /dev/null
 	endif
 	ifeq ($(UNAME_M),x86_64)
@@ -286,7 +286,7 @@ M4_PARAMS += -D M4_NGINX_LOG='$(NGINX_LOG)'
 M4_PARAMS += -D M4_DS_PREFIX='$(DS_PREFIX)'
 M4_PARAMS += -D M4_DS_ROOT='$(DS_ROOT)'
 M4_PARAMS += -D M4_DS_FILES='$(DS_FILES)'
-M4_PARAMS += -D M4_DS_EXAMLE='$(DS_EXAMLE)'
+M4_PARAMS += -D M4_DS_EXAMPLE='$(DS_EXAMPLE)'
 M4_PARAMS += -D M4_DEV_NULL='$(DEV_NULL)'
 M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
 

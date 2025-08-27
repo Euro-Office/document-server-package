@@ -1,6 +1,6 @@
 location ~ ^(\/welcome\/.*)$ {
   expires 365d;
-  alias M4_DS_EXAMLE$1;
+  alias M4_DS_EXAMPLE$1;
   index M4_PLATFORM.html;
 }
 
