@@ -347,14 +347,13 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		mkdir -p "$APP_DIR/App_Data/cache/files"
 		mkdir -p "$APP_DIR/App_Data/docbuilder"
 		mkdir -p "$APP_DIR-example/files"
-
-		mkdir -p "$DIR/../Data" #! 
 		mkdir -p "$DIR/fonts"
 		
 		# grand owner rights for home dir for ds user
-		chown ds:onlyoffice -R "$DIR/../Data" "$DIR"*
+		chown ds:onlyoffice -R "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
+		mkdir -p "$DIR/../Data" && { getent passwd onlyoffice >/dev/null && chown -R onlyoffice:onlyoffice "$DIR/../Data" || chown -R ds:onlyoffice "$DIR/../Data"; } && chmod g+rwxs "$DIR/../Data"
 
     #setup logrotate config rights
     chmod 644 ${CONF_DIR}/logrotate/*
