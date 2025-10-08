@@ -439,7 +439,7 @@ Filename: "{cmd}"; Parameters: "/C icacls ""{#NGINX_SRV_DIR}"" /remove:g *S-1-5-
 
 Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE USER {#DbDefUser} WITH PASSWORD '{code:GetDbPwd}';"""; Flags: runhidden; Check: IsUsingDefaultDatabase and CreateDbDefUserAuth;
 Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE DATABASE {#DbDefName};"""; Flags: runhidden; Check: IsUsingDefaultDatabase;
-Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""GRANT ALL PRIVILEGES ON DATABASE {#DbDefName}  TO {#DbDefUser};"""; Flags: runhidden; Check: IsUsingDefaultDatabase;
+Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""ALTER DATABASE {#DbDefName} OWNER TO {#DbDefUser};"""; Flags: runhidden; Check: IsUsingDefaultDatabase;
 
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\removetbl.sql"""; Flags: runhidden; Check: IsNotClusterMode; StatusMsg: "{cm:RemoveDb}"
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\createdb.sql"""; Flags: runhidden; Check: CreateDbAuth; StatusMsg: "{cm:CreateDb}"
@@ -501,7 +501,7 @@ Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
 Name: "Prerequisites\Certbot"; Description: "Certbot"; Flags: checkablealone; Types: full; Check: not IsCertbotInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: fixed; Types: full custom compact; Check: not IsOpenSSLInstalled;
 Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: not IsPythonInstalled;
-Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 12.17"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
+Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.0"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
 Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 3.12.11"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
 Name: "Prerequisites\Redis"; Description: "Redis 5.0.10"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRedisInstalled and not UseLocalStorage;
 

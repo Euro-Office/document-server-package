@@ -179,11 +179,11 @@ procedure Dependency_AddBundledPostgreSQL;
 begin
   if IsPostgreSQLInstalled() = False then
   begin
-    ExtractTemporaryFile('postgresql-12.17-1-windows-x64.exe');
+    ExtractTemporaryFile('postgresql-18.0-1-windows-x64.exe');
     Dependency_Add(
-      'postgresql-12.17-1-windows-x64.exe',
+      'postgresql-18.0-1-windows-x64.exe',
       '--unattendedmodeui none --install_runtimes 0 --mode unattended',
-      'PostgreSQL 12.17 x64',
+      'PostgreSQL 18.0 x64',
       '',
       '',
       False,
@@ -198,10 +198,10 @@ begin
     Dependency_Add(
       'postgresql.exe',
       '--unattendedmodeui none --install_runtimes 0 --mode unattended',
-      'PostgreSQL 12.17 x64',
+      'PostgreSQL 18.0 x64',
       Dependency_String(
         '',
-        'https://get.enterprisedb.com/postgresql/postgresql-12.17-1-windows-x64.exe'),
+        'https://get.enterprisedb.com/postgresql/postgresql-18.0-1-windows-x64.exe'),
       '',
       False,
       False);
