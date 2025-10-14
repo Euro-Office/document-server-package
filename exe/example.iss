@@ -33,9 +33,9 @@ Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""if(this.server===u
 
 Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.port = '{code:GetExamplePort}'"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}"
 
-Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.enable = {code:GetJwtEnabled}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_ENABLED}')));
-Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.secret = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_SECRET}')));
-Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.authorizationHeader = '{code:GetJwtHeader}'"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_HEADER}')));
+Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.enable = {code:GetJwtEnabled}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}";
+Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.secret = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}";
+Filename: "{#JSON}"; Parameters: "{#JSON_EXAMPLE_PARAMS} -e ""this.server.token.authorizationHeader = '{code:GetJwtHeader}'"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}";
 
 Filename: "{#WINSW}";   Parameters: "install ""{#EXAMPLE_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#EXAMPLE_SRV}}"
 
