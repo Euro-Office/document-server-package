@@ -67,6 +67,18 @@
             </a>
             <p>Please do NOT use a test example on your own server without proper code modifications. It is intended for testing purposes only and must be disabled before launching the editors into production.</p>
         </div>
+        <div class="content-block">
+            <h1>Admin Panel - Server Management</h1>
+            <p>Use Admin Panel to manage server configuration and monitoring.</p>
+            <h3>Start Admin Panel:</h3>
+            <pre>net start DsAdminPanelSvc</pre>
+            <h3>Add it to the autostart:</h3>
+            <pre>sc.exe config DsAdminPanelSvc start=auto</pre>
+            <p>On first access, you'll need to complete initial setup using a bootstrap code from the server logs. The bootstrap code is valid for 1 hour and can be found by checking the Admin Panel logs.</p>
+            <a href="../admin/">
+                <div class="button">GO TO ADMIN PANEL</div>
+            </a>
+        </div>
     </div>
     <div class="black-block">
         <div class="content-block">

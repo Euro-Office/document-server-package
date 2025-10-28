@@ -51,6 +51,7 @@ cp -r $DOCUMENTSERVER_CONFIG/* "$CONF_DIR/"
 mkdir -p "$LOG_DIR/docservice"
 mkdir -p "$LOG_DIR/converter"
 mkdir -p "$LOG_DIR/metrics"
+mkdir -p "$LOG_DIR/adminpanel"
 
 #make cache dir
 mkdir -p "$DATA_DIR/App_Data/cache/files"
@@ -152,7 +153,7 @@ rm -rf "%{buildroot}"
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/metrics
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/node_modules/modern-syslog/build/Release/core.node
+%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/AdminPanel/server/adminpanel
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
 %if %{defined example}
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}-example/example
@@ -258,6 +259,13 @@ if [ "$IS_UPGRADE" = "true" ]; then
     JWT_MESSAGE="You have JWT disabled. We recommend enabling JWT in ${LOCAL_CONFIG} in services.CoAuthoring.token.enable and configure your custom JWT key in services.CoAuthoring.secret"
   fi
 
+  # v9.1.0 - Adding the missing secret.browser.string field
+  if [ -f ${LOCAL_CONFIG} ] && [[ -n "$($JSON services.CoAuthoring.secret.inbox.string)" ]] && [[ -z "$($JSON services.CoAuthoring.secret.browser.string)" ]]; then
+    JWT_SECRET=$($JSON services.CoAuthoring.secret.inbox.string)
+    ${JSON} -I -q -e "if(this.services.CoAuthoring.secret.browser===undefined)this.services.CoAuthoring.secret.browser={};"
+    ${JSON} -I -q -e "if(this.services.CoAuthoring.secret.browser.string===undefined)this.services.CoAuthoring.secret.browser.string = '${JWT_SECRET}'"
+  fi
+
   if [ -f ${LOCAL_CONFIG} ] && [[ -n "$($JSON services.CoAuthoring.sql)" ]]; then
     #load_db_params
     DB_HOST=$($JSON services.CoAuthoring.sql.dbHost)
@@ -280,6 +288,14 @@ if [ "$IS_UPGRADE" = "true" ]; then
         echo "OK"
 
         echo -n "Updating PostgreSQL database... "
+        DB_SCHEMA=${DB_SCHEMA:-$($JSON services.CoAuthoring.sql.pgPoolExtraOptions.options 2>/dev/null | sed -n 's/.*search_path=\([^, ]*\).*/\1/p')}
+
+        if [ -n "${DB_SCHEMA}" ]; then
+          export PGOPTIONS="-c search_path=${DB_SCHEMA}"
+          $PSQL -c "CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA};" >/dev/null 2>&1
+          ${JSON} "this.services.CoAuthoring.sql.pgPoolExtraOptions ||= {}; this.services.CoAuthoring.sql.pgPoolExtraOptions.options = '${PGOPTIONS}'"
+        fi
+
         $PSQL -d "$DB_NAME" -f "$DIR/server/schema/postgresql/removetbl.sql" >/dev/null 2>&1
         $PSQL -d "$DB_NAME" -f "$DIR/server/schema/postgresql/createdb.sql" >/dev/null 2>&1
         echo "OK"
@@ -311,6 +327,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
     echo "You should reconfigure the package using script \"/usr/bin/documentserver-configure.sh\""
     echo ""
   fi
+  chown ds:ds "${LOCAL_CONFIG}"
 fi
 
 # generate allfonts.js, thumbnail and cache_tag
@@ -366,7 +383,11 @@ for SVC in %{package_services}; do
   fi
 done
 
-systemctl is-active --quiet ds-example && systemctl restart ds-example
+for SVC in ds-example ds-adminpanel; do
+  if [ -e /usr/lib/systemd/system/$SVC.service ]; then
+    systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
+  fi
+done
 
 if systemctl is-active --quiet nginx; then
   systemctl reload nginx >/dev/null 2>&1

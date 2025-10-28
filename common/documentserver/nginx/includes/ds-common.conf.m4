@@ -5,6 +5,9 @@ underscores_in_headers on;
 
 gzip on;
 gzip_vary on;
+gzip_min_length 1024;
+gzip_comp_level 5;
+gzip_disable "msie6";
 gzip_types  text/plain
             text/xml
             text/css

@@ -150,6 +150,15 @@ install_postges() {
 				{ echo "ERROR: can't connect to postgressql database"; exit 1; }
 		fi
 	set -e
+
+		DB_SCHEMA=${DB_SCHEMA:-$($JSON_BIN -q -f $LOCAL_CONFIG services.CoAuthoring.sql.pgPoolExtraOptions.options 2>/dev/null | sed -n 's/.*search_path=\([^, ]*\).*/\1/p')}
+
+		if [ -n "${DB_SCHEMA}" ]; then
+			export PGOPTIONS="-c search_path=${DB_SCHEMA}"
+			$PSQL -c "CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA};" >/dev/null 2>&1
+			$JSON -e "this.services.CoAuthoring.sql.pgPoolExtraOptions ||= {}; this.services.CoAuthoring.sql.pgPoolExtraOptions.options = '${PGOPTIONS}'"
+		fi
+
 		if [ ! $CLUSTER_MODE = true ]; then
 			$PSQL -f "$DIR/server/schema/postgresql/removetbl.sql" \
 				>/dev/null 2>&1
@@ -221,6 +230,9 @@ save_jwt_params(){
   fi
   
   ${JSON} -e "if(this.services.CoAuthoring.secret===undefined)this.services.CoAuthoring.secret={};"
+
+  ${JSON} -e "if(this.services.CoAuthoring.secret.browser===undefined)this.services.CoAuthoring.secret.browser={};"
+  ${JSON} -e "if(this.services.CoAuthoring.secret.browser.string===undefined)this.services.CoAuthoring.secret.browser.string = '${JWT_SECRET}'"
 
   ${JSON} -e "if(this.services.CoAuthoring.secret.inbox===undefined)this.services.CoAuthoring.secret.inbox={};"
   ${JSON} -e "if(this.services.CoAuthoring.secret.inbox.string===undefined)this.services.CoAuthoring.secret.inbox.string = '${JWT_SECRET}'"
@@ -341,19 +353,21 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		mkdir -p "$LOG_DIR-example"
 		mkdir -p "$LOG_DIR/converter"
 		mkdir -p "$LOG_DIR/metrics"
+		mkdir -p "$LOG_DIR/adminpanel"
 
 		mkdir -p "$APP_DIR/App_Data"
 		mkdir -p "$APP_DIR/App_Data/cache/files"
 		mkdir -p "$APP_DIR/App_Data/docbuilder"
 		mkdir -p "$APP_DIR-example/files"
-
-		mkdir -p "$DIR/../Data" #! 
 		mkdir -p "$DIR/fonts"
 		
 		# grand owner rights for home dir for ds user
-		chown ds:ds -R "$DIR/../Data" "$DIR"*
+		chown ds:ds -R "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
+
+		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
+		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
 
     #setup logrotate config rights
     chmod 644 ${CONF_DIR}/logrotate/*
@@ -397,7 +411,13 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 					systemctl restart $SVC >/dev/null 2>&1
 				fi
 			done
-			systemctl is-active --quiet ds-example && systemctl restart ds-example
+			
+			for SVC in ds-example ds-adminpanel; do
+				if [ -e /usr/lib/systemd/system/$SVC.service ]; then
+					systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
+				fi
+			done
+
 			service nginx restart >/dev/null 2>&1
 		fi
 		echo "Congratulations, the M4_COMPANY_NAME M4_PRODUCT_NAME has been installed successfully!"

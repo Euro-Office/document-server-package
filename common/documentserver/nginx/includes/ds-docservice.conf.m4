@@ -1,25 +1,28 @@
 #welcome page
-rewrite ^/$ $the_scheme://$the_host$the_prefix/welcome/ redirect;
+location = / { return 308 $the_scheme://$the_host$the_prefix/welcome/; }
 
 #script caching protection
-rewrite ^(?<cache>\/web-apps\/apps\/(?!api\/documents\/api\.js$).*)$ $the_scheme://$the_host$the_prefix/M4_PRODUCT_VERSION-$cache_tag$cache redirect;
+location ~ ^(?<cache>\/web-apps\/apps\/(?!api\/documents\/api\.js$).*)$ {
+  return 308 $the_scheme://$the_host$the_prefix/M4_PRODUCT_VERSION-$cache_tag$cache$is_args$args;
+}
 
 #disable caching for api.js
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps\/apps\/api\/documents\/api\.js)$ {
-  expires -1;
+  expires off;
+  add_header Cache-Control "no-store, no-cache, must-revalidate";
   # gzip_static on;
   alias  M4_DS_ROOT/$2;
 }
 
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(document_editor_service_worker.js)$ {
-  expires 365d;
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
   # gzip_static on;
   alias  M4_DS_ROOT/sdkjs/common/serviceworker/$2;
 }
 
 #suppress logging the unsupported locale error in web-apps
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps)(\/.*\.json)$ {
-  expires 365d;
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
   error_log M4_DEV_NULL crit;
   # gzip_static on;
   alias M4_DS_ROOT/$2$3;
@@ -27,14 +30,14 @@ location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps)(\/.*\.json)$ {
 
 #suppress logging the unsupported locale error in plugins
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(sdkjs-plugins)(\/.*\.json)$ {
-  expires 365d;
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
   error_log M4_DEV_NULL crit;
   # gzip_static on;
   alias M4_DS_ROOT/$2$3;
 }
 
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(\/.*)$ {
-  expires 365d;
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
   # gzip_static on;
   alias M4_DS_ROOT/$2$3;
 }
@@ -74,6 +77,15 @@ location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(info)(\/.*)$ {
 
 location / {
   proxy_pass http://docservice;
+  proxy_http_version 1.1;
+  proxy_read_timeout 300s;
+  proxy_send_timeout 300s;
+  proxy_connect_timeout 300s;
+  proxy_buffering on;
+  proxy_buffers 64 32k;
+  proxy_busy_buffers_size 64k;
+  proxy_max_temp_file_size 0;
+  proxy_redirect off;
 }
 
 location ~ ^/([\d]+\.[\d]+\.[\d]+[\.|-][\w]+)/(?<path>.*)$ {

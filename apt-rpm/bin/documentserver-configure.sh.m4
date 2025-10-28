@@ -138,6 +138,13 @@ while [ "$1" != "" ]; do
 			fi
 		;;
 
+		-dbsh | --databaseschema )
+			if [ "$2" != "" ]; then
+				DB_SCHEMA=$2
+				shift
+			fi
+		;;
+
 		-? | -h | --help )
 			echo "  Usage: bash documentserver-configure.sh [PARAMETER] [[PARAMETER], ...]"
 			echo
@@ -152,6 +159,7 @@ while [ "$1" != "" ]; do
 			echo "      -dbn, --databasename         The name of a database to be created on the image startup"
 			echo "      -dbu, --databaseuser         The new user name with superuser permissions for the database account"
 			echo "      -dbpw, --databasepassword    The password set for the database account"
+			echo "      -dbsh, --databaseschema      The PostgreSQL schema used as the default search_path                           ( Defaults to public )"
 			echo "      -at, --amqptype              Defines the message broker type. Possible values are rabbitmq or activemq       ( Defaults to rabbitmq )"
 			echo "      -apr, --amqpproto            The protocol for the connection to AMQP server. Possible values are amqp, amqps ( Defaults to amqp )"
 			echo "      -au, --amqpuser              The username for the AMQP server account"
@@ -390,6 +398,14 @@ input_amqp_params(){
 
 execute_postgres_scripts(){
 	echo -n "Installing PostgreSQL database... "
+
+	DB_SCHEMA=${DB_SCHEMA:-$($JSON_BIN -q -f $LOCAL_CONFIG services.CoAuthoring.sql.pgPoolExtraOptions.options 2>/dev/null | sed -n 's/.*search_path=\([^, ]*\).*/\1/p')}
+
+	if [ -n "${DB_SCHEMA}" ]; then
+		export PGOPTIONS="-c search_path=${DB_SCHEMA}"
+		$PSQL -c "CREATE SCHEMA IF NOT EXISTS ${DB_SCHEMA};" >/dev/null 2>&1
+		$JSON -e "this.services.CoAuthoring.sql.pgPoolExtraOptions ||= {}; this.services.CoAuthoring.sql.pgPoolExtraOptions.options = '${PGOPTIONS}'"
+	fi
 
         if [ ! "$CLUSTER_MODE" = true ]; then
                 $PSQL -f "$DIR/server/schema/postgresql/removetbl.sql" >/dev/null 2>&1

@@ -1,5 +1,9 @@
-upstream docservice {  
+upstream docservice {
   server localhost:8000 max_fails=0 fail_timeout=0s;
+}
+
+upstream adminpanel {  
+  server localhost:9000 max_fails=0 fail_timeout=0s;
 }
 
 upstream example {  

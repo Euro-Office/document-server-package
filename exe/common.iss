@@ -68,6 +68,13 @@
 
 #define LOCAL_SERVICE 'NT Authority\LocalService'
 
+#define ADMINPANEL_SRV        'DsAdminPanelSvc'
+#define ADMINPANEL_SRV_DISPLAY  str(sAppName + " AdminPanel")
+#define ADMINPANEL_SRV_DESCR  str(sAppName + " AdminPanel Service")
+#define ADMINPANEL_SRV_DIR    '{app}\server\AdminPanel'
+#define ADMINPANEL_SRV_LOG_DIR    '{app}\Log\adminpanel'
+#define ADMINPANEL_SRV_FILE '{app}\winsw\AdminPanel.xml'
+
 #define CONVERTER_SRV        'DsConverterSvc'
 #define CONVERTER_SRV_DISPLAY  str(sAppName + " Converter")
 #define CONVERTER_SRV_DESCR  str(sAppName + " Converter Service")
@@ -310,6 +317,7 @@ Source: ..\common\documentserver\nginx\*.tmpl;  DestDir: {#NGINX_SRV_DIR}\conf; 
 Source: ..\common\documentserver\nginx\ds.conf; DestDir: {#NGINX_SRV_DIR}\conf; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
 Source: scripts\connectionRabbit.py;            DestDir: "{app}"; Flags: ignoreversion; Components: Program
 Source: winsw\WinSW-x64.exe;                    DestDir: "{app}\winsw"; Flags: ignoreversion; Components: Program
+Source: {#file "winsw\AdminPanel.xml"};         DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "AdminPanel.xml"
 Source: {#file "winsw\Converter.xml"};          DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "Converter.xml"
 Source: {#file "winsw\DocService.xml"};         DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "DocService.xml"
 Source: {#file "winsw\Proxy.xml"};              DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "Proxy.xml"
@@ -320,6 +328,7 @@ Name: "{app}\server\App_Data\cache\files"; Permissions: service-modify
 Name: "{app}\server\App_Data\docbuilder"; Permissions: service-modify
 Name: "{app}\sdkjs";                  Permissions: users-modify
 Name: "{app}\fonts";                  Permissions: users-modify
+Name: "{#ADMINPANEL_SRV_LOG_DIR}";    Permissions: service-modify
 Name: "{#CONVERTER_SRV_LOG_DIR}";     Permissions: service-modify
 Name: "{#DOCSERVICE_SRV_LOG_DIR}";    Permissions: service-modify
 Name: "{#NGINX_SRV_DIR}";             Permissions: service-modify
@@ -347,9 +356,9 @@ Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_LIC
 Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_DS_PORT}"; ValueData: "{code:GetDefaultPort}"; Check: not IsStringEmpty(ExpandConstant('{param:DS_PORT}'));
 Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_DOCSERVICE_PORT}"; ValueData: "{code:GetDocServicePort}"; Check: not IsStringEmpty(ExpandConstant('{param:DOCSERVICE_PORT}'));
 Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_FONTS_PATH}"; ValueData: "{code:GetFontsPath}"; Check: not IsStringEmpty(ExpandConstant('{param:FONTS_PATH}'));
-Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_ENABLED}"; ValueData: "{code:GetJwtEnabled}"; Check: not IsStringEmpty(ExpandConstant('{param:JWT_ENABLED}'));
-Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_SECRET}"; ValueData: "{code:GetJwtSecret}";  Check: not IsStringEmpty(ExpandConstant('{param:JWT_SECRET}'));
-Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_HEADER}"; ValueData: "{code:GetJwtHeader}"; Check: not IsStringEmpty(ExpandConstant('{param:JWT_HEADER}'));
+Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_ENABLED}"; ValueData: "{code:GetJwtEnabled}";
+Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_SECRET}"; ValueData: "{code:GetJwtSecret}";
+Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT_HEADER}"; ValueData: "{code:GetJwtHeader}";
 
 [Run]
 Filename: "{app}\bin\documentserver-generate-allfonts.bat"; Parameters: "true"; Flags: runhidden; StatusMsg: "{cm:GenFonts}"
@@ -396,10 +405,11 @@ Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.token.enable.request.inbox = {code:GetJwtEnabled}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_ENABLED}')));
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.token.enable.request.outbox = {code:GetJwtEnabled}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_ENABLED}')));
 
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.secret===undefined)this.services.CoAuthoring.secret={{inbox:{{},outbox:{{},session: {{} };"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.inbox.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_SECRET}')));
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.outbox.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_SECRET}')));
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.session.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_SECRET}')));
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret={{browser:{{},inbox:{{},outbox:{{},session: {{} };"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.browser.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.inbox.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.outbox.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.secret.session.string = '{code:GetJwtSecret}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
 
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.token.inbox===undefined)this.services.CoAuthoring.token.inbox={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.token.inbox.header = '{code:GetJwtHeader}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_HEADER}')));
@@ -434,6 +444,8 @@ Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""GRANT ALL PRI
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\removetbl.sql"""; Flags: runhidden; Check: IsNotClusterMode; StatusMsg: "{cm:RemoveDb}"
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\createdb.sql"""; Flags: runhidden; Check: CreateDbAuth; StatusMsg: "{cm:CreateDb}"
 
+Filename: "{#WINSW}";   Parameters: "install ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#ADMINPANEL_SRV}}"
+
 Filename: "{#WINSW}";   Parameters: "install ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#CONVERTER_SRV}}"
 Filename: "{#WINSW}";   Parameters: "start ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:StartSrv,{#CONVERTER_SRV}}"
 
@@ -453,6 +465,9 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{
 
 [UninstallRun]
 Filename: "{app}\bin\documentserver-prepare4shutdown.bat"; Flags: runhidden
+
+Filename: "{#WINSW}"; Parameters: "stop ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden
+Filename: "{#WINSW}"; Parameters: "uninstall ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden
 
 Filename: "{#WINSW}"; Parameters: "stop ""{#PROXY_SRV_FILE}"""; Flags: runhidden
 Filename: "{#WINSW}"; Parameters: "uninstall ""{#PROXY_SRV_FILE}"""; Flags: runhidden
@@ -789,15 +804,6 @@ begin
   Result := IsDefaultDatabase;
 end;
 
-function SetJWTRandomString(Param: String): String;
-begin
-  if JWTSecret = '' then
-  begin;
-    JWTSecret := RandomString(30);
-  end;
-  Result := JWTSecret;
-end;
-
 function IsLocalJsonExists(): Boolean;
 begin
   Result := LocalJsonExists;
@@ -854,6 +860,30 @@ begin
   finally
     SL.Free;
   end;
+end;
+
+function GetJWTFromFileOrGenerate(Param: String): String;
+var
+  TempFileName, Command, Output: string;
+  ResultCode: Integer;
+begin
+  TempFileName := ExpandConstant('{tmp}\output.txt');
+  if IsLocalJsonExists() then
+  begin
+    Command := '"' + ExpandConstant('{#JSON}') + '" -q -f "' + ExpandConstant('{app}\config\local.json') + '" -a "services.CoAuthoring.secret.inbox.string" > "' + TempFileName + '"';
+    Exec('cmd.exe', '/C "' + Command + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    if FileExists(TempFileName) then
+    begin
+      Output := LoadStringFromFile(TempFileName);
+      JWTSecret := Trim(Output);
+      DeleteFile(TempFileName);
+    end;
+  end
+  else
+  begin
+    JWTSecret := RandomString(30);
+  end;
+  Result := JWTSecret;
 end;
 
 function GenerateRSAKey(): Boolean;
@@ -964,7 +994,7 @@ end;
 
 function GetJwtSecret(Param: String): String;
 begin
-  Result := ExpandConstant('{param:JWT_SECRET|{reg:HKLM\{#sAppRegPath},{#REG_JWT_SECRET}|{code:SetJWTRandomString}}}');
+  Result := ExpandConstant('{param:JWT_SECRET|{reg:HKLM\{#sAppRegPath},{#REG_JWT_SECRET}|{code:GetJWTFromFileOrGenerate}}}');
 end;
 
 function GetJwtHeader(Param: String): String;
