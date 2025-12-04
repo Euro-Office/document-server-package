@@ -1,14 +1,4 @@
-# Admin API: proxy as-is (do not strip prefix)
-location /api/v1/admin {
+# AdminPanel: proxy all requests to the service
+location ^~ /admin {
   proxy_pass http://adminpanel;
-}
-
-# Normalize /admin -> /admin/
-location = /admin {
-  # Consider possible ds-vpath prefix
-  return 301 $the_scheme://$the_host$the_prefix/admin/$is_args$args;
-}
-
-location ^~ /admin/ {
-  proxy_pass http://adminpanel/;
 }

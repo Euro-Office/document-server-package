@@ -1,9 +1,9 @@
 #welcome page
-location = / { return 308 $the_scheme://$the_host$the_prefix/welcome/; }
+location = / { return 302 $the_scheme://$the_host$the_prefix/welcome/; }
 
 #script caching protection
 location ~ ^(?<cache>\/web-apps\/apps\/(?!api\/documents\/api\.js$).*)$ {
-  return 308 $the_scheme://$the_host$the_prefix/M4_PRODUCT_VERSION-$cache_tag$cache$is_args$args;
+  return 302 $the_scheme://$the_host$the_prefix/M4_PRODUCT_VERSION-$cache_tag$cache$is_args$args;
 }
 
 #disable caching for api.js
@@ -86,6 +86,15 @@ location / {
   proxy_busy_buffers_size 64k;
   proxy_max_temp_file_size 0;
   proxy_redirect off;
+}
+
+location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(ai-proxy)(\/.*)?$ {
+  proxy_pass http://docservice/$2$3;
+
+  proxy_connect_timeout 300s;
+  proxy_send_timeout    300s;
+  proxy_read_timeout    300s;
+  send_timeout          300s;
 }
 
 location ~ ^/([\d]+\.[\d]+\.[\d]+[\.|-][\w]+)/(?<path>.*)$ {

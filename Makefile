@@ -81,7 +81,7 @@ NGINX := $(DOCUMENTSERVER)/nginx
 DS_MIME_TYPES = common/documentserver/nginx/includes/ds-mime.types.conf
 
 PSQL := $(DOCUMENTSERVER)/pgsql/bin
-PSQL_ZIP := postgresql-10.20-2-windows-x64-binaries.zip
+PSQL_ZIP := postgresql-18.0-1-windows-x64-binaries.zip
 
 WINSW := $(EXE_BUILD_DIR)/winsw/WinSW-x64.exe
 
@@ -89,8 +89,8 @@ PYTHON := $(EXE_BUILD_DIR)/redist/python-3.11.3-amd64.exe
 OPENSSL := $(EXE_BUILD_DIR)/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
 RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-3.12.11.exe
 ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_26.2.1.exe
-POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-12.17-1-windows-x64.exe
-REDIS := $(EXE_BUILD_DIR)/redist/Redis-x64-5.0.10.msi
+POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-18.0-1-windows-x64.exe
+REDIS := $(EXE_BUILD_DIR)/redist/Redis-7.4.0-Windows-x64.msi
 CERTBOT := $(EXE_BUILD_DIR)/redist/certbot-2.6.0.exe
 VC2013 := $(EXE_BUILD_DIR)/redist/vcredist2013_x64.exe
 VC2022 := $(EXE_BUILD_DIR)/redist/vcredist2022_x64.exe
@@ -557,10 +557,10 @@ $(WINSW)      : url = https://github.com/winsw/winsw/releases/download/v3.0.0-al
 $(CERTBOT)    : url = https://github.com/certbot/certbot/releases/download/v2.6.0/certbot-beta-installer-win_amd64_signed.exe
 $(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-26.2.1/otp_win64_26.2.1.exe
 $(OPENSSL)    : url = https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
-$(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-12.17-1-windows-x64.exe
+$(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-18.0-1-windows-x64.exe
 $(PYTHON)     : url = https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe
 $(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.12.11/rabbitmq-server-3.12.11.exe
-$(REDIS)      : url = https://download.onlyoffice.com/install/windows/redist/Redis-x64-5.0.10.msi
+$(REDIS)      : url = https://github.com/ONLYOFFICE/redis-windows/releases/download/7.4.0/Redis-7.4.0-Windows-x64.msi
 $(VC2013)     : url = https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe
 $(VC2022)     : url = https://aka.ms/vs/17/release/vc_redist.x64.exe
 
