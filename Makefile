@@ -87,8 +87,8 @@ WINSW := $(EXE_BUILD_DIR)/winsw/WinSW-x64.exe
 
 PYTHON := $(EXE_BUILD_DIR)/redist/python-3.11.3-amd64.exe
 OPENSSL := $(EXE_BUILD_DIR)/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
-RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-3.12.11.exe
-ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_26.2.1.exe
+RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-4.2.1.exe
+ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_27.3.4.6.exe
 POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-18.0-1-windows-x64.exe
 REDIS := $(EXE_BUILD_DIR)/redist/Redis-7.4.0-Windows-x64.msi
 CERTBOT := $(EXE_BUILD_DIR)/redist/certbot-2.6.0.exe
@@ -555,11 +555,11 @@ $(DS_BIN): documentserver
 
 $(WINSW)      : url = https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe
 $(CERTBOT)    : url = https://github.com/certbot/certbot/releases/download/v2.6.0/certbot-beta-installer-win_amd64_signed.exe
-$(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-26.2.1/otp_win64_26.2.1.exe
+$(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-27.3.4.6/otp_win64_27.3.4.6.exe
 $(OPENSSL)    : url = https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
 $(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-18.0-1-windows-x64.exe
 $(PYTHON)     : url = https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe
-$(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.12.11/rabbitmq-server-3.12.11.exe
+$(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v4.2.1/rabbitmq-server-4.2.1.exe
 $(REDIS)      : url = https://github.com/ONLYOFFICE/redis-windows/releases/download/7.4.0/Redis-7.4.0-Windows-x64.msi
 $(VC2013)     : url = https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe
 $(VC2022)     : url = https://aka.ms/vs/17/release/vc_redist.x64.exe
