@@ -21,3 +21,20 @@
         nocreate
         copytruncate
 }
+
+/var/lib/M4_DS_PREFIX/App_Data/cache/files/errors/**/**/* {
+        daily
+        missingok
+        notifempty
+        nocompress
+        nodateext
+        nocreate
+        rotate 0
+        nocopytruncate
+        sharedscripts
+
+        prerotate
+            find /var/lib/M4_DS_PREFIX/App_Data/cache/files/errors/ \
+                -mindepth 2 -type d -mtime +30 -print -exec rm -rf {} +
+        endscript
+}
