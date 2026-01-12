@@ -514,7 +514,7 @@ deb/build/debian/$(PACKAGE_NAME).% : deb/template/package.%.m4
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
 
 $(DEB): $(DEB_DEPS) $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
-	cd deb/build && dpkg-buildpackage -b -uc -us -a$(DEB_ARCH)
+	+cd deb/build && dpkg-buildpackage -b -uc -us -a$(DEB_ARCH)
 
 %.exe:
 	cd $(@D) && $(ISCC) $(ISCC_PARAMS) $(iss_file)
