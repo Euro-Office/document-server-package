@@ -1,5 +1,7 @@
 #!/bin/bash
 
+[ $(id -u) -ne 0 ] && [ $(id -u) -ne 101 ]  && { echo "Root or UID 101 privileges required"; exit 1; }
+
 while [ "$1" != "" ]; do
 	case $1 in
 
@@ -21,10 +23,6 @@ while [ "$1" != "" ]; do
 	esac
 	shift
 done
-
-if [[ "${K8S_CONTAINER}" != "true" ]]; then
-  [ $(id -u) -ne 0 ] && { echo "Root privileges required"; exit 1; }
-fi
 
 export LD_LIBRARY_PATH=/var/www/M4_DS_PREFIX/server/FileConverter/bin:$LD_LIBRARY_PATH
 
