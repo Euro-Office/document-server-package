@@ -1,0 +1,3 @@
+Defaults:ds env_reset,secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Defaults:ds !requiretty
+ds ALL=(root) NOPASSWD: /usr/bin/documentserver-letsencrypt.sh *

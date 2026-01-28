@@ -6,7 +6,8 @@ NGINX_CONF_DIR="/etc/M4_DS_PREFIX/nginx";
 
 if [ "$#" -ge "2" ]; then
     LETS_ENCRYPT_MAIL=$1
-    LETS_ENCRYPT_DOMAIN=$2
+    LETS_ENCRYPT_DOMAIN="${2,,}"
+    [[ "$LETS_ENCRYPT_DOMAIN" =~ ^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$ ]] || { echo "ERROR: Invalid DOMAIN" >&2; exit 1; }
 
     SSL_CERT="${LETSENCRYPT_ROOT_DIR}/${LETS_ENCRYPT_DOMAIN}/fullchain.pem";
     SSL_KEY="${LETSENCRYPT_ROOT_DIR}/${LETS_ENCRYPT_DOMAIN}/privkey.pem";

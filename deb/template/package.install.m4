@@ -6,6 +6,8 @@
 
 ../../common/documentserver/systemd/*.service /usr/lib/systemd/system
 
+../../common/documentserver/sudoers/* /etc/sudoers.d
+
 ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 ../../common/documentserver-example/systemd/*.service /usr/lib/systemd/system,)
 
