@@ -5,6 +5,10 @@ if [ "$1" != "" ]; then
     ONLYOFFICE_DATA_CONTAINER=$1
 fi
 
+if [ "$2" != "" ]; then
+    ONLYOFFICE_K8S_CONTAINER=$2
+fi
+
 DIR="/var/www/M4_DS_PREFIX"
 
 export LD_LIBRARY_PATH=/var/www/M4_DS_PREFIX/server/FileConverter/bin:$LD_LIBRARY_PATH
@@ -53,9 +57,11 @@ echo -n Generating js caches, please wait...
 echo Done
 
 # Setting user rights for files created in the previous steps
-chown -R ds:ds "$DIR/sdkjs"
-chown -R ds:ds "$DIR/server/FileConverter/bin"
-chown -R ds:ds "$DIR/fonts"
+if [[ "${ONLYOFFICE_K8S_CONTAINER}" != "true" ]]; then
+  chown -R ds:ds "$DIR/sdkjs"
+  chown -R ds:ds "$DIR/server/FileConverter/bin"
+  chown -R ds:ds "$DIR/fonts"
+fi
 
 #Remove gzipped files
 rm -f \

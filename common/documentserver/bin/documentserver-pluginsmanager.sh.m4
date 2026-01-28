@@ -1,7 +1,5 @@
 #!/bin/bash
 
-[ $(id -u) -ne 0 ] && { echo "Root privileges required"; exit 1; }
-
 while [ "$1" != "" ]; do
 	case $1 in
 
@@ -11,11 +9,22 @@ while [ "$1" != "" ]; do
 				shift
 			fi
 		;;
+
+                -k | --k8s )
+                        if [ "$2" != "" ]; then
+                                K8S_CONTAINER=$2
+                                shift
+                        fi
+                ;;
 		
 		* ) args+=("$1");
 	esac
 	shift
 done
+
+if [[ "${K8S_CONTAINER}" != "true" ]]; then
+  [ $(id -u) -ne 0 ] && { echo "Root privileges required"; exit 1; }
+fi
 
 export LD_LIBRARY_PATH=/var/www/M4_DS_PREFIX/server/FileConverter/bin:$LD_LIBRARY_PATH
 
@@ -24,7 +33,9 @@ PLUGIN_DIR="/var/www/M4_DS_PREFIX/sdkjs-plugins/"
 
 "${PLUGIN_MANAGER}" --directory=\"${PLUGIN_DIR}\" "${args[@]}"
 
-chown -R ds:ds "${PLUGIN_DIR}"
+if [[ "${K8S_CONTAINER}" != "true" ]]; then
+  chown -R ds:ds "${PLUGIN_DIR}"
+fi
 
 if [ "$RESTART_CONDITION" != "false" ]; then
 	if pgrep -x ""systemd"" >/dev/null; then
