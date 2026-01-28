@@ -10,12 +10,12 @@ while [ "$1" != "" ]; do
 			fi
 		;;
 
-                -k | --k8s )
-                        if [ "$2" != "" ]; then
-                                K8S_CONTAINER=$2
-                                shift
-                        fi
-                ;;
+		-k | --k8s )
+			if [ "$2" != "" ]; then
+				K8S_CONTAINER=$2
+				shift
+			fi
+		;;
 		
 		* ) args+=("$1");
 	esac
