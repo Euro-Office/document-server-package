@@ -6,10 +6,16 @@ location ~ ^(\/welcome\/.*)$ {
 
 location /example/ {
   proxy_pass http://example/;
+  proxy_intercept_errors on;
+  error_page 502 503 504 = /example-disabled.html;
 
   proxy_set_header X-Forwarded-Host $the_host;
   proxy_set_header X-Forwarded-Proto $the_scheme;
   proxy_set_header X-Forwarded-Path /example;
   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+
+location = /example-disabled.html {
+  alias M4_DS_EXAMPLE/welcome/example-disabled.html;
 }
 
