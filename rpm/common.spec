@@ -67,6 +67,10 @@ touch "$HOME_DIR/web-apps/apps/api/documents/api.js"
 mkdir -p %{buildroot}/usr/lib/systemd/system
 cp %{_builddir}/../../../common/documentserver/systemd/*.service %{buildroot}/usr/lib/systemd/system
 
+#install sudoers file
+mkdir -p %{buildroot}/etc/sudoers.d/
+cp %{_builddir}/../../../common/documentserver/sudoers/documentserver %{buildroot}/etc/sudoers.d/
+
 #install nginx config
 DS_NGINX_CONF=$CONF_DIR/nginx/
 mkdir -p "$DS_NGINX_CONF"
@@ -175,6 +179,7 @@ rm -rf "%{buildroot}"
 %attr(-, root, root) %{_sysconfdir}/nginx/%{nginx_conf_d}/*
 %attr(-, root, root) %{_sysconfdir}/nginx/includes/*
 %attr(644, root, root) /usr/lib/systemd/system/*
+%attr(440, root, root) /etc/sudoers.d/documentserver
 
 %dir
 %attr(750, %{nginx_user}, %{nginx_user}) %{_localstatedir}/cache/nginx/%{_ds_prefix}
