@@ -184,6 +184,14 @@ TARGET := $(PLATFORM)_$(ARCHITECTURE)
 DS_BIN_REPO := ./ds-repo
 DS_BIN := ./$(TARGET)/ds-bin-$(PRODUCT_VERSION)$(ARCH_EXT)
 
+ifeq ($(PLATFORM),win)
+	ADMIN_DISABLED_COMMANDS := net start DsAdminPanelSvc
+	EXAMPLE_DISABLED_COMMANDS := net start DsExampleSvc
+else
+	ADMIN_DISABLED_COMMANDS := sudo systemctl start ds-adminpanel
+	EXAMPLE_DISABLED_COMMANDS := sudo systemctl start ds-example
+endif
+
 ISCC := iscc
 ISCC_PARAMS += -Qp
 ISCC_PARAMS += -DVERSION=$(PRODUCT_VERSION).$(BUILD_NUMBER)
@@ -428,6 +436,9 @@ documentserver-example:
 	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
+
+	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g; s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
 
 	echo "Done" > $@
 
