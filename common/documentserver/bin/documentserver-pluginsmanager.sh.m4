@@ -31,7 +31,7 @@ PLUGIN_DIR="/var/www/M4_DS_PREFIX/sdkjs-plugins/"
 
 "${PLUGIN_MANAGER}" --directory=\"${PLUGIN_DIR}\" "${args[@]}"
 
-if [[ "${K8S_CONTAINER}" != "true" ]]; then
+if [ "${K8S_CONTAINER}" != "true" ]; then
   chown -R ds:ds "${PLUGIN_DIR}"
 fi
 
