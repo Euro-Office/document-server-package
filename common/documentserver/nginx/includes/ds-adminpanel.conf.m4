@@ -2,5 +2,5 @@
 location ^~ /admin {
   proxy_pass http://adminpanel;
   proxy_intercept_errors on;
-  error_page 502 503 504 = /welcome/admin-disabled.html;
+  error_page 502 503 504 /welcome/admin-disabled.html;
 }
