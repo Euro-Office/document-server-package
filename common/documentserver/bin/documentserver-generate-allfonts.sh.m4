@@ -18,7 +18,7 @@ echo -n Generating AllFonts.js, please wait...
 
 
 "$DIR/server/tools/allfontsgen"\
-  --input="$DIR/core-fonts"\
+  --input="$DIR/core-fonts;$DIR/../Data/fonts"\
   --allfonts-web="$DIR/sdkjs/common/AllFonts.js"\
   --allfonts="$DIR/server/FileConverter/bin/AllFonts.js"\
   --images="$DIR/sdkjs/common/Images"\
