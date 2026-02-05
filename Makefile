@@ -302,6 +302,22 @@ M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
 
 RPMBUILD_BINARY_PAYLOAD ?= w9T$(shell nproc).xzdio
 
+RPM_PARAMS += --define '_package_name $(PACKAGE_NAME)'
+RPM_PARAMS += --define '_product_version $(PRODUCT_VERSION)'
+RPM_PARAMS += --define '_company_name $(COMPANY_NAME)'
+RPM_PARAMS += --define '_product_name $(PRODUCT_NAME)'
+RPM_PARAMS += --define '_publisher_name $(PUBLISHER_NAME)'
+RPM_PARAMS += --define '_publisher_url $(PUBLISHER_URL)'
+RPM_PARAMS += --define '_support_url $(SUPPORT_URL)'
+RPM_PARAMS += --define '_support_mail $(SUPPORT_MAIL)'
+RPM_PARAMS += --define '_company_name_low $(COMPANY_NAME_LOW)'
+RPM_PARAMS += --define '_product_name_low $(PRODUCT_NAME_LOW)'
+RPM_PARAMS += --define '_ds_prefix $(DS_PREFIX)'
+RPM_PARAMS += --define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)'
+ifeq ($(shell rpm --eval %_arch):$(RPM_ARCH),x86_64:aarch64)
+	RPM_PARAMS += --define '__strip /usr/bin/aarch64-linux-gnu-strip'
+endif
+
 .PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
 
 all: rpm deb apt-rpm
@@ -452,20 +468,9 @@ $(APT_RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 	cd $(@D)/../../.. && rpmbuild \
 		-bb \
 		--define '_topdir $(@D)/../../../builddir' \
-		--define '_package_name $(PACKAGE_NAME)' \
-		--define '_product_version $(PRODUCT_VERSION)' \
 		--define '_build_number $(BUILD_NUMBER)$(APT_RPM_RELEASE_SUFFIX)' \
-		--define '_company_name $(COMPANY_NAME)' \
-		--define '_product_name $(PRODUCT_NAME)' \
-		--define '_publisher_name $(PUBLISHER_NAME)' \
-		--define '_publisher_url $(PUBLISHER_URL)' \
-		--define '_support_url $(SUPPORT_URL)' \
-		--define '_support_mail $(SUPPORT_MAIL)' \
-		--define '_company_name_low $(COMPANY_NAME_LOW)' \
-		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
-		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)' \
 		--target $(RPM_ARCH) \
+		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
 rpm/$(PACKAGE_NAME).spec : rpm/package.spec
@@ -476,20 +481,9 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 	cd $(@D)/../../.. && rpmbuild \
 		-bb \
 		--define '_topdir $(@D)/../../../builddir' \
-		--define '_package_name $(PACKAGE_NAME)' \
-		--define '_product_version $(PRODUCT_VERSION)' \
 		--define '_build_number $(BUILD_NUMBER)$(RPM_RELEASE_SUFFIX)' \
-		--define '_company_name $(COMPANY_NAME)' \
-		--define '_product_name $(PRODUCT_NAME)' \
-		--define '_publisher_name $(PUBLISHER_NAME)' \
-		--define '_publisher_url $(PUBLISHER_URL)' \
-		--define '_support_url $(SUPPORT_URL)' \
-		--define '_support_mail $(SUPPORT_MAIL)' \
-		--define '_company_name_low $(COMPANY_NAME_LOW)' \
-		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
-		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)' \
 		--target $(RPM_ARCH) \
+		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
 ifeq ($(COMPANY_NAME_LOW),onlyoffice)
