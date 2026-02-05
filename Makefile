@@ -300,6 +300,8 @@ M4_PARAMS += -D M4_DS_EXAMPLE='$(DS_EXAMPLE)'
 M4_PARAMS += -D M4_DEV_NULL='$(DEV_NULL)'
 M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
 
+RPMBUILD_BINARY_PAYLOAD ?= w9T$(shell nproc).xzdio
+
 .PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
 
 all: rpm deb apt-rpm
@@ -462,7 +464,7 @@ $(APT_RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		--define '_company_name_low $(COMPANY_NAME_LOW)' \
 		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
 		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload w7.xzdio' \
+		--define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)' \
 		--target $(RPM_ARCH) \
 		$(PACKAGE_NAME).spec
 
@@ -486,7 +488,7 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		--define '_company_name_low $(COMPANY_NAME_LOW)' \
 		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
 		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload w7.xzdio' \
+		--define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)' \
 		--target $(RPM_ARCH) \
 		$(PACKAGE_NAME).spec
 
