@@ -58,7 +58,7 @@ echo -n Generating js caches, please wait...
 echo Done
 
 # Setting user rights for files created in the previous steps
-if [[ "${ONLYOFFICE_K8S_CONTAINER}" != "true" ]]; then
+if [ "${ONLYOFFICE_K8S_CONTAINER}" != "true" ]; then
   chown -R ds:ds "$DIR/sdkjs"
   chown -R ds:ds "$DIR/server/FileConverter/bin"
   chown -R ds:ds "$DIR/fonts"
