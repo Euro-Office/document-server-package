@@ -121,6 +121,14 @@ begin
         Result := true;
       wpSelectComponents:
       begin
+        if WizardIsComponentSelected('Prerequisites\VC2013') then
+        begin
+          Dependency_AddBundledVC2013;
+        end;
+        if WizardIsComponentSelected('Prerequisites\VC2022') then
+        begin
+          Dependency_AddBundledVC2015To2022;
+        end;
         if WizardIsComponentSelected('Prerequisites\Redis') then
         begin
           Dependency_AddBundledRedis;
@@ -145,14 +153,6 @@ begin
         if WizardIsComponentSelected('Prerequisites\OpenSSL') then
         begin
           Dependency_AddBundledOpenSSL;
-        end;
-        if WizardIsComponentSelected('Prerequisites\VC2013') then
-        begin
-          Dependency_AddBundledVC2013;
-        end;
-        if WizardIsComponentSelected('Prerequisites\VC2022') then
-        begin
-          Dependency_AddBundledVC2015To2022;
         end;
        end;
     end;
