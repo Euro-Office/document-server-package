@@ -1,3 +1,4 @@
+%define __strip    /bin/true
 Summary: %{_package_summary}
 Name: %{_package_name}
 Version: %{_product_version}
