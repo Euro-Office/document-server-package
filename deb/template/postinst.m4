@@ -345,6 +345,8 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		save_jwt_params
 		[ -z "$DS_DOCKER_INSTALLATION" ] && save_wopi_params
 
+		chown root:ds ${CONF_DIR}/*.json && chmod 640  ${CONF_DIR}/*.json
+
 		# configure ngninx for M4_ONLYOFFICE_VALUE
 		setup_nginx
 
