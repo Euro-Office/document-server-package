@@ -314,9 +314,7 @@ RPM_PARAMS += --define '_company_name_low $(COMPANY_NAME_LOW)'
 RPM_PARAMS += --define '_product_name_low $(PRODUCT_NAME_LOW)'
 RPM_PARAMS += --define '_ds_prefix $(DS_PREFIX)'
 RPM_PARAMS += --define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)'
-ifeq ($(shell rpm --eval %_arch):$(RPM_ARCH),x86_64:aarch64)
-	RPM_PARAMS += --define '__strip /usr/bin/aarch64-linux-gnu-strip'
-endif
+RPM_PARAMS += --define "__strip /bin/true"
 
 .PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
 
