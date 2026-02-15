@@ -345,8 +345,6 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		save_jwt_params
 		[ -z "$DS_DOCKER_INSTALLATION" ] && save_wopi_params
 
-		chown root:ds ${CONF_DIR}/*.json && chmod 640  ${CONF_DIR}/*.json
-
 		# configure ngninx for M4_ONLYOFFICE_VALUE
 		setup_nginx
 
@@ -365,6 +363,7 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		
 		# grand owner rights for home dir for ds user
 		chown ds:ds -R "$DIR"*
+		chown ds:ds ${CONF_DIR}/*.json
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
 
