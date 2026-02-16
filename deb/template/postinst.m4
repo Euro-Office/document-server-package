@@ -365,6 +365,24 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		chown ds:ds -R "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
+		if compgen -G "${CONF_DIR}/*.json" > /dev/null; then
+			chown ds:ds ${CONF_DIR}/*.json
+			chmod 0640 ${CONF_DIR}/*.json
+		fi
+
+		# keep runtime binaries executable (same intent as RPM %attr(550,...))
+		for bin in \
+			"$DIR/npm/json" \
+			"$DIR/server/DocService/docservice" \
+			"$DIR/server/FileConverter/converter" \
+			"$DIR/server/FileConverter/bin/docbuilder" \
+			"$DIR/server/FileConverter/bin/x2t" \
+			"$DIR/server/Metrics/metrics" \
+			"$DIR/server/AdminPanel/server/adminpanel" \
+			"$DIR-example/example"; do
+			[ -f "${bin}" ] && chmod 0550 "${bin}"
+		done
+		if [ -d "$DIR/server/tools" ]; then chmod 0550 "$DIR"/server/tools/*; fi
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
