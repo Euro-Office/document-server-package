@@ -370,19 +370,26 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 			chmod 0640 ${CONF_DIR}/*.json
 		fi
 
-		# keep runtime binaries executable (same intent as RPM %attr(550,...))
-		for bin in \
-			"$DIR/npm/json" \
-			"$DIR/server/DocService/docservice" \
-			"$DIR/server/FileConverter/converter" \
-			"$DIR/server/FileConverter/bin/docbuilder" \
-			"$DIR/server/FileConverter/bin/x2t" \
-			"$DIR/server/Metrics/metrics" \
-			"$DIR/server/AdminPanel/server/adminpanel" \
-			"$DIR-example/example"; do
-			[ -f "${bin}" ] && chmod 0550 "${bin}"
+		# # keep runtime binaries executable (same intent as RPM %attr(550,...))
+		# for bin in \
+		# 	"$DIR/npm/json" \
+		# 	"$DIR/server/DocService/docservice" \
+		# 	"$DIR/server/FileConverter/converter" \
+		# 	"$DIR/server/FileConverter/bin/docbuilder" \
+		# 	"$DIR/server/FileConverter/bin/x2t" \
+		# 	"$DIR/server/Metrics/metrics" \
+		# 	"$DIR/server/AdminPanel/server/adminpanel" \
+		# 	"$DIR-example/example"; do
+		# 	[ -f "${bin}" ] && chmod 0550 "${bin}"
+		# done
+		# if [ -d "$DIR/server/tools" ]; then chmod 0550 "$DIR"/server/tools/*; fi
+
+		for CONFIG_PATH in "$CONF_DIR" "${CONF_DIR}-example"; do
+			if [ -d "$CONFIG_PATH" ]; then
+				find "$CONFIG_PATH" -maxdepth 1 -type f -name '*.json' -exec chown ds:ds {} +
+				find "$CONFIG_PATH" -maxdepth 1 -type f -name '*.json' -exec chmod 640 {} +
+			fi
 		done
-		if [ -d "$DIR/server/tools" ]; then chmod 0550 "$DIR"/server/tools/*; fi
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
