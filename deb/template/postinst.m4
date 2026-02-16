@@ -384,12 +384,7 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		# done
 		# if [ -d "$DIR/server/tools" ]; then chmod 0550 "$DIR"/server/tools/*; fi
 
-		for CONFIG_PATH in "$CONF_DIR" "${CONF_DIR}-example"; do
-			if [ -d "$CONFIG_PATH" ]; then
-				find "$CONFIG_PATH" -maxdepth 1 -type f -name '*.json' -exec chown ds:ds {} +
-				find "$CONFIG_PATH" -maxdepth 1 -type f -name '*.json' -exec chmod 640 {} +
-			fi
-		done
+		find "$CONF_DIR" "$CONF_DIR-example" -maxdepth 1 -type f -name '*.json' -exec chown ds:ds {} +
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
