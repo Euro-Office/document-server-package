@@ -12,6 +12,7 @@ ECHO | SET /p="Generating AllFonts.js, please wait..."
 
 "%~dp0\..\server\tools\allfontsgen.exe" ^
   --input="%~dp0\..\core-fonts" ^
+  --input="%ProgramData%\{#sIntCompanyName}\Data\custom-fonts" ^
   --allfonts-web="%~dp0\..\sdkjs\common\AllFonts.js" ^
   --allfonts="%~dp0\..\server\FileConverter\bin\AllFonts.js" ^
   --images="%~dp0\..\sdkjs\common\Images" ^

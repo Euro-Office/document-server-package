@@ -307,7 +307,8 @@ Source: ..\common\documentserver\home\*;            DestDir: {app}; Excludes: "*
 Source: ..\common\documentserver\home\*.exe;        DestDir: {app}; Flags: ignoreversion recursesubdirs signonce; Components: Program
 Source: ..\common\documentserver\config\*;          DestDir: {app}\config; Flags: ignoreversion recursesubdirs; Permissions: users-readexec; Components: Program
 Source: local\local.json;                           DestDir: {app}\config; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
-Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat documentserver-generate-allfonts.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: {#file "..\common\documentserver\bin\documentserver-generate-allfonts.bat"};         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion; Components: Program; DestName: "documentserver-generate-allfonts.bat"
 #ifdef DS_PLUGIN_INSTALLATION
 Source: ..\common\documentserver\bin\documentserver-pluginsmanager.bat;    DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
 #endif
@@ -327,6 +328,7 @@ Source: {#file "winsw\Proxy.xml"};              DestDir: "{app}\winsw"; Flags: i
 Name: "{app}\server\App_Data";        Permissions: service-modify
 Name: "{app}\server\App_Data\cache\files"; Permissions: service-modify
 Name: "{app}\server\App_Data\docbuilder"; Permissions: service-modify
+Name: "{app}\server\FileConverter";   Permissions: service-modify
 Name: "{app}\sdkjs";                  Permissions: users-modify
 Name: "{app}\fonts";                  Permissions: users-modify
 Name: "{#ADMINPANEL_SRV_LOG_DIR}";    Permissions: service-modify
