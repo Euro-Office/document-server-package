@@ -10,6 +10,7 @@ Architecture: M4_DEB_ARCH
 Depends: ${shlibs:Depends}, ${misc:Depends}, 
   adduser,
   ca-certificates,
+  certbot,
   coreutils,
   curl,
   libasound2 | libasound2t64,
