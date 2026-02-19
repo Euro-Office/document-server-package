@@ -331,6 +331,7 @@ Name: "{app}\server\App_Data\docbuilder"; Permissions: service-modify
 Name: "{app}\server\FileConverter";   Permissions: service-modify
 Name: "{app}\sdkjs";                  Permissions: users-modify
 Name: "{app}\fonts";                  Permissions: users-modify
+Name: "{app}\web-apps";               Permissions: service-modify
 Name: "{#ADMINPANEL_SRV_LOG_DIR}";    Permissions: service-modify
 Name: "{#CONVERTER_SRV_LOG_DIR}";     Permissions: service-modify
 Name: "{#DOCSERVICE_SRV_LOG_DIR}";    Permissions: service-modify
