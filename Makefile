@@ -228,7 +228,6 @@ DEB_DEPS += deb/build/debian/$(PACKAGE_NAME).dirs
 
 COMMON_DEPS += common/documentserver/nginx/includes/ds-common.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-docservice.conf
-COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-letsencrypt.conf
 COMMON_DEPS += common/documentserver/nginx/includes/http-common.conf
 COMMON_DEPS += common/documentserver/nginx/ds-ssl.conf.tmpl
@@ -236,6 +235,11 @@ COMMON_DEPS += common/documentserver/nginx/ds.conf.tmpl
 COMMON_DEPS += common/documentserver/nginx/ds.conf
 COMMON_DEPS += common/documentserver-example/nginx/includes/ds-example.conf
 COMMON_DEPS += $(DS_MIME_TYPES)
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
+COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
+endif
 
 LINUX_DEPS += common/documentserver/logrotate/ds.conf
 
@@ -245,7 +249,6 @@ LINUX_DEPS_CLEAN += common/documentserver/logrotate/*.conf
 LINUX_DEPS += common/documentserver/systemd/ds-converter.service
 LINUX_DEPS += common/documentserver/systemd/ds-docservice.service
 LINUX_DEPS += common/documentserver/systemd/ds-metrics.service
-LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
 LINUX_DEPS += common/documentserver-example/systemd/ds-example.service
 
 LINUX_DEPS_CLEAN += common/documentserver/systemd/*.service
@@ -363,6 +366,10 @@ documentserver:
 	mkdir -p $(DOCUMENTSERVER_FILES)
 	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
 
+ifneq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+	rm -rf $(DOCUMENTSERVER)/server/AdminPanel
+endif
+
 	mkdir -p $(DOCUMENTSERVER_CONFIG)
 	mkdir -p $(DOCUMENTSERVER_CONFIG)/log4js
 
@@ -452,9 +459,18 @@ documentserver-example:
 	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
+	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
 
-	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g; s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" \
-		$(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
+else
+	rm -f $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
+	sed -i '/<!-- BEGIN ADMIN PANEL SECTION -->/,/<!-- END ADMIN PANEL SECTION -->/d' \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/docker.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux-rpm.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/win.html
+endif
 
 	echo "Done" > $@
 
@@ -489,6 +505,10 @@ M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
+endif
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+M4_PARAMS += -D M4_DS_ADMINPANEL_ENABLE=1
 endif
 
 ifneq ($(PLUGIN_MANAGER_FILE),)
