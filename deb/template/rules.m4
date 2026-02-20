@@ -20,3 +20,9 @@ execute_after_dh_fixperms:
 
 override_dh_builddeb:
 	dh_builddeb -- -z9 -Zxz --threads-max=$(shell nproc)
+
+override_dh_systemd_enable:
+	dh_systemd_enable --no-enable
+
+override_dh_systemd_start:
+	dh_systemd_start --no-start --no-restart-after-upgrade --no-stop-on-upgrade
