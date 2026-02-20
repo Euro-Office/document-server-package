@@ -228,7 +228,6 @@ DEB_DEPS += deb/build/debian/$(PACKAGE_NAME).dirs
 
 COMMON_DEPS += common/documentserver/nginx/includes/ds-common.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-docservice.conf
-COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-letsencrypt.conf
 COMMON_DEPS += common/documentserver/nginx/includes/http-common.conf
 COMMON_DEPS += common/documentserver/nginx/ds-ssl.conf.tmpl
@@ -236,6 +235,11 @@ COMMON_DEPS += common/documentserver/nginx/ds.conf.tmpl
 COMMON_DEPS += common/documentserver/nginx/ds.conf
 COMMON_DEPS += common/documentserver-example/nginx/includes/ds-example.conf
 COMMON_DEPS += $(DS_MIME_TYPES)
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
+COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
+endif
 
 LINUX_DEPS += common/documentserver/logrotate/ds.conf
 
@@ -245,7 +249,6 @@ LINUX_DEPS_CLEAN += common/documentserver/logrotate/*.conf
 LINUX_DEPS += common/documentserver/systemd/ds-converter.service
 LINUX_DEPS += common/documentserver/systemd/ds-docservice.service
 LINUX_DEPS += common/documentserver/systemd/ds-metrics.service
-LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
 LINUX_DEPS += common/documentserver-example/systemd/ds-example.service
 
 LINUX_DEPS_CLEAN += common/documentserver/systemd/*.service
@@ -489,6 +492,10 @@ M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
+endif
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+M4_PARAMS += -D M4_DS_ADMINPANEL_ENABLE=1
 endif
 
 ifneq ($(PLUGIN_MANAGER_FILE),)

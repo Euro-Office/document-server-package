@@ -353,7 +353,8 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		mkdir -p "$LOG_DIR-example"
 		mkdir -p "$LOG_DIR/converter"
 		mkdir -p "$LOG_DIR/metrics"
-		mkdir -p "$LOG_DIR/adminpanel"
+ifelse('M4_DS_ADMINPANEL_ENABLE','1',`mkdir -p "$LOG_DIR/adminpanel"
+')dnl
 
 		mkdir -p "$APP_DIR/App_Data"
 		mkdir -p "$APP_DIR/App_Data/cache/files"
@@ -413,7 +414,7 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 				fi
 			done
 			
-			for SVC in ds-example ds-adminpanel; do
+			for SVC in ds-example ifelse('M4_DS_ADMINPANEL_ENABLE','1',`ds-adminpanel',`'); do
 				if [ -e /usr/lib/systemd/system/$SVC.service ]; then
 					systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
 				fi
