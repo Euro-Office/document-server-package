@@ -21,6 +21,7 @@
 #if SameText(EDITION, 'developer') | SameText(EDITION, 'enterprise')
 #define sProductName        sProductName + ' ' + UpperCase(Copy(EDITION,1,1)) + 'E'
 #define sAppName            sAppName + ' ' + UpperCase(Copy(EDITION,1,1)) + 'E'
+#define DS_ADMIN
 #endif
 
 #define sDbDefValue         'onlyoffice'

@@ -68,13 +68,6 @@
 
 #define LOCAL_SERVICE 'NT Authority\LocalService'
 
-#define ADMINPANEL_SRV        'DsAdminPanelSvc'
-#define ADMINPANEL_SRV_DISPLAY  str(sAppName + " AdminPanel")
-#define ADMINPANEL_SRV_DESCR  str(sAppName + " AdminPanel Service")
-#define ADMINPANEL_SRV_DIR    '{app}\server\AdminPanel'
-#define ADMINPANEL_SRV_LOG_DIR    '{app}\Log\adminpanel'
-#define ADMINPANEL_SRV_FILE '{app}\winsw\AdminPanel.xml'
-
 #define CONVERTER_SRV        'DsConverterSvc'
 #define CONVERTER_SRV_DISPLAY  str(sAppName + " Converter")
 #define CONVERTER_SRV_DESCR  str(sAppName + " Converter Service")
@@ -303,11 +296,12 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 ;Name: "pl"; MessagesFile: "compiler:Languages\Polish.isl"
 
 [Files]
-Source: ..\common\documentserver\home\*;            DestDir: {app}; Excludes: "*local.json"; Flags: ignoreversion recursesubdirs; Components: Program
-Source: ..\common\documentserver\home\*.exe;        DestDir: {app}; Flags: ignoreversion recursesubdirs signonce; Components: Program
+Source: ..\common\documentserver\home\*;            DestDir: {app}; Excludes: "AdminPanel, *local.json"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: ..\common\documentserver\home\*.exe;        DestDir: {app}; Excludes: "adminpanel.exe"; Flags: ignoreversion recursesubdirs signonce; Components: Program
 Source: ..\common\documentserver\config\*;          DestDir: {app}\config; Flags: ignoreversion recursesubdirs; Permissions: users-readexec; Components: Program
 Source: local\local.json;                           DestDir: {app}\config; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
-Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat documentserver-generate-allfonts.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: {#file "..\common\documentserver\bin\documentserver-generate-allfonts.bat"};         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion; Components: Program; DestName: "documentserver-generate-allfonts.bat"
 #ifdef DS_PLUGIN_INSTALLATION
 Source: ..\common\documentserver\bin\documentserver-pluginsmanager.bat;    DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
 #endif
@@ -318,7 +312,6 @@ Source: ..\common\documentserver\nginx\*.tmpl;  DestDir: {#NGINX_SRV_DIR}\conf; 
 Source: ..\common\documentserver\nginx\ds.conf; DestDir: {#NGINX_SRV_DIR}\conf; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
 Source: scripts\connectionRabbit.py;            DestDir: "{app}"; Flags: ignoreversion; Components: Program
 Source: winsw\WinSW-x64.exe;                    DestDir: "{app}\winsw"; Flags: ignoreversion; Components: Program
-Source: {#file "winsw\AdminPanel.xml"};         DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "AdminPanel.xml"
 Source: {#file "winsw\Converter.xml"};          DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "Converter.xml"
 Source: {#file "winsw\DocService.xml"};         DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "DocService.xml"
 Source: {#file "winsw\Proxy.xml"};              DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "Proxy.xml"
@@ -327,9 +320,10 @@ Source: {#file "winsw\Proxy.xml"};              DestDir: "{app}\winsw"; Flags: i
 Name: "{app}\server\App_Data";        Permissions: service-modify
 Name: "{app}\server\App_Data\cache\files"; Permissions: service-modify
 Name: "{app}\server\App_Data\docbuilder"; Permissions: service-modify
+Name: "{app}\server\FileConverter";   Permissions: service-modify
 Name: "{app}\sdkjs";                  Permissions: users-modify
 Name: "{app}\fonts";                  Permissions: users-modify
-Name: "{#ADMINPANEL_SRV_LOG_DIR}";    Permissions: service-modify
+Name: "{app}\web-apps";               Permissions: service-modify
 Name: "{#CONVERTER_SRV_LOG_DIR}";     Permissions: service-modify
 Name: "{#DOCSERVICE_SRV_LOG_DIR}";    Permissions: service-modify
 Name: "{#NGINX_SRV_DIR}";             Permissions: service-modify
@@ -418,6 +412,10 @@ Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.token.outbox===undefined)this.services.CoAuthoring.token.outbox={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.token.outbox.header = '{code:GetJwtHeader}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: (not IsLocalJsonExists()) or (not IsStringEmpty(ExpandConstant('{param:JWT_HEADER}')));
 
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.FileConverter===undefined)this.FileConverter={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.FileConverter.converter===undefined)this.FileConverter.converter={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.FileConverter.converter.signingKeyStorePath = '{code:GetSigningKeyStorePath}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.wopi===undefined)this.wopi={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: GenerateRSAKey;
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.wopi.enable = {code:GetWopiEnabled}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.wopi.privateKey = '{code:GetWopiPrivateKey}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
@@ -445,8 +443,6 @@ Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""ALTER DATABAS
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\removetbl.sql"""; Flags: runhidden; Check: IsNotClusterMode; StatusMsg: "{cm:RemoveDb}"
 Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\createdb.sql"""; Flags: runhidden; Check: CreateDbAuth; StatusMsg: "{cm:CreateDb}"
 
-Filename: "{#WINSW}";   Parameters: "install ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#ADMINPANEL_SRV}}"
-
 Filename: "{#WINSW}";   Parameters: "install ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#CONVERTER_SRV}}"
 Filename: "{#WINSW}";   Parameters: "start ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:StartSrv,{#CONVERTER_SRV}}"
 
@@ -456,19 +452,20 @@ Filename: "{#WINSW}";   Parameters: "start ""{#DOCSERVICE_SRV_FILE}"""; Flags: r
 Filename: "{#WINSW}";   Parameters: "install ""{#PROXY_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#NGINX_SRV}}"
 Filename: "{#WINSW}";   Parameters: "start ""{#PROXY_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:StartSrv,{#NGINX_SRV}}"
 
+Filename: "sc"; Parameters: "sdset ""{#CONVERTER_SRV}"" ""D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;RPWPLO;;;S-1-5-19)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"""; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#CONVERTER_SRV}}"
+Filename: "sc"; Parameters: "sdset ""{#DOCSERVICE_SRV}"" ""D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;RPWPLO;;;S-1-5-19)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"""; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#DOCSERVICE_SRV}}"
+Filename: "sc"; Parameters: "sdset ""{#NGINX_SRV}"" ""D:(A;;CCLCSWRPWPDTLOCRRC;;;SY)(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;BA)(A;;CCLCSWLOCRRC;;;IU)(A;;CCLCSWLOCRRC;;;SU)(A;;RPWPLO;;;S-1-5-19)S:(AU;FA;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;WD)"""; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#NGINX_SRV}}"
+
 Filename: "sc"; Parameters: "failure ""{#CONVERTER_SRV}"" actions= restart/60000/restart/60000/restart/60000 reset= 86400"; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#CONVERTER_SRV}}"
 Filename: "sc"; Parameters: "failure ""{#DOCSERVICE_SRV}"" actions= restart/60000/restart/60000/restart/60000 reset= 86400"; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#DOCSERVICE_SRV}}"
 Filename: "sc"; Parameters: "failure ""{#NGINX_SRV}"" actions= restart/60000/restart/60000/restart/60000 reset= 86400"; Flags: runhidden; StatusMsg: "{cm:CfgSrv,{#NGINX_SRV}}"
 
-Filename: "schtasks"; Parameters: "/Create /F /RU ""{#LOCAL_SERVICE}"" /SC DAILY /TN ""{#LogRotateTaskName}"" /TR ""{app}\bin\documentserver-log-rotate.bat"""; Flags: runhidden; StatusMsg: "{cm:AddRotateTask}"
+Filename: "schtasks"; Parameters: "/Create /F /RU ""{#LOCAL_SERVICE}"" /SC DAILY /TN ""{#LogRotateTaskName}"" /TR ""powershell.exe -NoProfile -ExecutionPolicy Bypass -File \""{app}\bin\documentserver-log-rotate.ps1\"" """; Flags: runhidden; StatusMsg: "{cm:AddRotateTask}"
 
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#NGINX_SRV_DESCR}"" program=""{#NGINX_SRV_DIR}\nginx.exe"" dir=in action=allow protocol=tcp localport={code:GetDefaultPorts}"; Flags: runhidden; StatusMsg: "{cm:FireWallExt}"
 
 [UninstallRun]
 Filename: "{app}\bin\documentserver-prepare4shutdown.bat"; Flags: runhidden
-
-Filename: "{#WINSW}"; Parameters: "stop ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden
-Filename: "{#WINSW}"; Parameters: "uninstall ""{#ADMINPANEL_SRV_FILE}"""; Flags: runhidden
 
 Filename: "{#WINSW}"; Parameters: "stop ""{#PROXY_SRV_FILE}"""; Flags: runhidden
 Filename: "{#WINSW}"; Parameters: "uninstall ""{#PROXY_SRV_FILE}"""; Flags: runhidden
@@ -502,8 +499,8 @@ Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
 Name: "Prerequisites\Certbot"; Description: "Certbot"; Flags: checkablealone; Types: full; Check: not IsCertbotInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: fixed; Types: full custom compact; Check: not IsOpenSSLInstalled;
 Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: not IsPythonInstalled;
-Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.0"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
-Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 3.12.11"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
+Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
+Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.2.1"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
 Name: "Prerequisites\Redis"; Description: "Redis 7.4.0"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRedisInstalled and not UseLocalStorage;
 
 [Code]
@@ -761,6 +758,15 @@ begin
   RuntimeConfig := ExpandConstant('{param:RUNTIMECONFIG_PATH|{#LICENSE_PATH}\runtime.json}');
   StringChangeEx(RuntimeConfig, '\', '/', True);
   Result := RuntimeConfig;
+end;
+
+function GetSigningKeyStorePath(Param: String): String;
+var
+  SIGNINGKEYSTOREPATH: String;
+begin
+  SIGNINGKEYSTOREPATH := ExpandConstant('{param:SIGNINGKEYSTOREPATH|{#LICENSE_PATH}\signing-keystore.p12}');
+  StringChangeEx(SIGNINGKEYSTOREPATH, '\', '/', True);
+  Result := SIGNINGKEYSTOREPATH;
 end;
 
 function GetFontsPath(Param: String): String;
@@ -1476,4 +1482,8 @@ end;
 
 #ifdef DS_EXAMPLE
 #include "example.iss"
+#endif
+
+#ifdef DS_ADMIN
+#include "admin.iss"
 #endif

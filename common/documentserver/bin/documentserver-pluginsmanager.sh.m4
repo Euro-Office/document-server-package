@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ $(id -u) -ne 0 ] && { echo "Root privileges required"; exit 1; }
+[ $(id -u) -ne 0 ] && [ $(id -u) -ne 101 ]  && { echo "Root or UID 101 privileges required"; exit 1; }
 
 while [ "$1" != "" ]; do
 	case $1 in
@@ -8,6 +8,13 @@ while [ "$1" != "" ]; do
 		-r | --restart )
 			if [ "$2" != "" ]; then
 				RESTART_CONDITION=$2
+				shift
+			fi
+		;;
+
+		-k | --k8s )
+			if [ "$2" != "" ]; then
+				K8S_CONTAINER=$2
 				shift
 			fi
 		;;
@@ -24,7 +31,9 @@ PLUGIN_DIR="/var/www/M4_DS_PREFIX/sdkjs-plugins/"
 
 "${PLUGIN_MANAGER}" --directory=\"${PLUGIN_DIR}\" "${args[@]}"
 
-chown -R ds:ds "${PLUGIN_DIR}"
+if [ "${K8S_CONTAINER}" != "true" ]; then
+  chown -R ds:ds "${PLUGIN_DIR}"
+fi
 
 if [ "$RESTART_CONDITION" != "false" ]; then
 	if pgrep -x ""systemd"" >/dev/null; then

@@ -1,11 +1,13 @@
 location ~ ^(\/welcome\/.*)$ {
   expires 365d;
-  alias M4_DS_EXAMLE$1;
+  alias M4_DS_EXAMPLE$1;
   index M4_PLATFORM.html;
 }
 
 location /example/ {
   proxy_pass http://example/;
+  proxy_intercept_errors on;
+  error_page 502 503 504 /welcome/example-disabled.html;
 
   proxy_set_header X-Forwarded-Host $the_host;
   proxy_set_header X-Forwarded-Proto $the_scheme;

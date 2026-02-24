@@ -75,6 +75,13 @@ location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(info)(\/.*)$ {
   proxy_pass http://docservice/$2$3;
 }
 
+#document formats discovery
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(meta\/formats)$ {
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
+  # gzip_static on;
+  alias M4_DS_ROOT/document-formats/onlyoffice-docs-formats.json;
+}
+
 location / {
   proxy_pass http://docservice;
   proxy_http_version 1.1;

@@ -26,7 +26,7 @@ while [ "$1" != "" ]; do
 			fi
 		;;
 
-		-dbh | --datahost )
+		-dbh | --databasehost )
 			if [ "$2" != "" ]; then
 				DB_HOST=$2
 				shift

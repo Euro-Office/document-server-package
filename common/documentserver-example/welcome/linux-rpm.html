@@ -48,7 +48,7 @@
     <div class="notice_block">
         <h1>Starting from version 7.2,  JWT is enabled by default.</h1> <br>
         <p class="notice_text">A random secret is generated automatically if a custom secret has not been added during installation.</p>
-        <p class="notice_text">The secret is available in - <em>/etc/onlyoffice/documentserver/<b>local.json</b></em> in - <em>services.CoAuthoring.secret.browser.string</em> parameter.</p>
+        <p class="notice_text">The secret is available in - <em>/etc/onlyoffice/documentserver/<b>local.json</b></em> in - <em>services.CoAuthoring.secret.inbox.string</em> parameter.</p>
         <p class="notice_text">If you want to replace the default secret with a custom key, read the <a href="https://api.onlyoffice.com/docs/docs-api/additional-api/signature/">documentation.</a></p>
     </div>
     <div>
@@ -65,6 +65,7 @@
             </a>
             <p>Please do NOT use a test example on your own server without proper code modifications. It is intended for testing purposes only and must be disabled before launching the editors into production.</p>
         </div>
+        <!-- BEGIN ADMIN PANEL SECTION -->
         <div class="content-block">
             <h1>Admin Panel - Server Management</h1>
             <p>Use Admin Panel to manage server configuration and monitoring.</p>
@@ -77,6 +78,7 @@
                 <div class="button">GO TO ADMIN PANEL</div>
             </a>
         </div>
+        <!-- END ADMIN PANEL SECTION -->
     </div>
     <div class="black-block">
         <div class="content-block">
