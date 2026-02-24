@@ -104,8 +104,10 @@
 #define NGINX_DS_CONF '{app}\nginx\conf\ds.conf'
 #define NGINX_DS_TMPL '{app}\nginx\conf\ds.conf.tmpl'
 #define NGINX_DS_SSL_TMPL '{app}\nginx\conf\ds-ssl.conf.tmpl'
+#define NGINX_LETSENCRYPT_CONF '{app}\nginx\conf\includes\ds-letsencrypt.conf'
 
 #define LICENSE_PATH str("{commonappdata}\" + sIntCompanyName + "\Data")
+#define LENSENCRYPT_PATH str("{commonappdata}\" + sIntCompanyName + "\letsencrypt")
 
 #define LogRotateTaskName str(sAppName + " Log Rotate Task")
 #define LOG_ROTATE_BYTES 10485760
@@ -332,6 +334,8 @@ Name: "{#NGINX_SRV_DIR}\temp";        Permissions: service-modify
 Name: "{#NGINX_SRV_DIR}\logs";        Permissions: service-modify
 Name: "{#POSTGRESQL_DATA_DIR}";
 Name: "{#LICENSE_PATH}";              Permissions: service-modify
+Name: "{#LENSENCRYPT_PATH}";          Permissions: service-modify
+Name: "{commonappdata}\win-acme";     Permissions: service-modify
 
 [Icons]
 Name: "{group}\{cm:Uninstall}"; Filename: "{uninstallexe}"
@@ -428,6 +432,7 @@ Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.wopi.exponent = {code
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.wopi.exponentOld = {code:GetWopiExponent}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}";
 
 Filename: "{#REPLACE}"; Parameters: """(listen .*:)(\d{{2,5}\b)(?! ssl)(.*)"" ""$1""{code:GetDefaultPort}""$3"" ""{#NGINX_DS_CONF}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#REPLACE}"; Parameters: """root\s+\.\./letsencrypt/;"" ""root {#LENSENCRYPT_PATH};"" ""{#NGINX_LETSENCRYPT_CONF}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 ; Filename: "{cmd}"; Parameters: "/C COPY /Y ""{#NGINX_DS_TMPL}"" ""{#NGINX_DS_CONF}"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 ; Filename: "{#REPLACE}"; Parameters: "{{{{DOCSERVICE_PORT}} {code:GetDocServicePort} ""{#NGINX_SRV_DIR}\conf\includes\onlyoffice-http.conf"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 ; Filename: "{#REPLACE}"; Parameters: "{{{{EXAMPLE_PORT}} {code:GetExamplePort} ""{#NGINX_SRV_DIR}\conf\includes\onlyoffice-http.conf"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
@@ -464,6 +469,8 @@ Filename: "schtasks"; Parameters: "/Create /F /RU ""{#LOCAL_SERVICE}"" /SC DAILY
 
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#NGINX_SRV_DESCR}"" program=""{#NGINX_SRV_DIR}\nginx.exe"" dir=in action=allow protocol=tcp localport={code:GetDefaultPorts}"; Flags: runhidden; StatusMsg: "{cm:FireWallExt}"
 
+Filename: "{cmd}"; Parameters: "/C icacls ""{pf}\Win-Acme"" /grant ""NT AUTHORITY\LOCAL SERVICE:(OI)(CI)M"" /T"; Flags: runhidden waituntilterminated
+
 [UninstallRun]
 Filename: "{app}\bin\documentserver-prepare4shutdown.bat"; Flags: runhidden
 
@@ -496,7 +503,7 @@ Name: custom; Description: {cm:CustomInstall}; Flags: iscustom
 [Components]
 Name: "Program"; Description: "{cm:Program}"; Types: full compact custom; Flags: fixed
 Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
-Name: "Prerequisites\Certbot"; Description: "Certbot"; Flags: checkablealone; Types: full; Check: not IsCertbotInstalled;
+Name: "Prerequisites\WinAcme"; Description: "WinAcme v2.2.9.1701"; Flags: checkablealone; Types: full; Check: not IsWinAcmeInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: fixed; Types: full custom compact; Check: not IsOpenSSLInstalled;
 Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: not IsPythonInstalled;
 Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
@@ -1454,9 +1461,9 @@ begin
            begin
              Dependency_AddPostgreSQL;
            end;
-        if WizardIsComponentSelected('Prerequisites\Certbot') then
+        if WizardIsComponentSelected('Prerequisites\WinAcme') then
         begin
-          Dependency_AddCertbot;
+          Dependency_AddWinAcme;
         end;
         if WizardIsComponentSelected('Prerequisites\Python') then
         begin

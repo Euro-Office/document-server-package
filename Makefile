@@ -91,7 +91,7 @@ RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-4.2.1.exe
 ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_27.3.4.6.exe
 POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-18.1-2-windows-x64.exe
 REDIS := $(EXE_BUILD_DIR)/redist/Redis-7.4.0-Windows-x64.msi
-CERTBOT := $(EXE_BUILD_DIR)/redist/certbot-2.6.0.exe
+WINACME := $(EXE_BUILD_DIR)/redist/Win-acme-2.2.9.1701.msi
 VC2013 := $(EXE_BUILD_DIR)/redist/vcredist2013_x64.exe
 VC2022 := $(EXE_BUILD_DIR)/redist/vcredist2022_x64.exe
 
@@ -208,7 +208,7 @@ ISCC_PARAMS += -DSIGN
 ISCC_PARAMS += -S'byparam=signtool.exe sign /a /v /n $(firstword $(PUBLISHER_NAME)) /t http://timestamp.digicert.com $$f'
 endif
 
-EXE_PR_DEPS := $(POSTGRESQL) $(CERTBOT) $(REDIS) $(ERLANG) $(RABBITMQ) $(OPENSSL) $(PYTHON) $(VC2013) $(VC2022)
+EXE_PR_DEPS := $(POSTGRESQL) $(WINACME) $(REDIS) $(ERLANG) $(RABBITMQ) $(OPENSSL) $(PYTHON) $(VC2013) $(VC2022)
 
 DEB_DEPS += deb/build/debian/source/format
 DEB_DEPS += deb/build/debian/changelog
@@ -579,7 +579,7 @@ $(DS_BIN): documentserver
 	$(AR) $@ ./$(DOCUMENTSERVER)/sdkjs ./$(DOCUMENTSERVER)/server/FileConverter/bin
 
 $(WINSW)      : url = https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe
-$(CERTBOT)    : url = https://github.com/certbot/certbot/releases/download/v2.6.0/certbot-beta-installer-win_amd64_signed.exe
+$(WINACME)    : url = https://github.com/ONLYOFFICE/win-acme-installer/releases/download/v2.2.9.1701/Win-acme-2.2.9.1701.msi
 $(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-27.3.4.6/otp_win64_27.3.4.6.exe
 $(OPENSSL)    : url = https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
 $(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-18.1-2-windows-x64.exe
