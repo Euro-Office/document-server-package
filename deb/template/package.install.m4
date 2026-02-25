@@ -4,7 +4,13 @@
 ../../common/documentserver/nginx/*.tmpl etc/M4_DS_PREFIX/nginx
 ../../common/documentserver/nginx/includes/*.conf etc/M4_DS_PREFIX/nginx/includes
 
-../../common/documentserver/systemd/*.service /usr/lib/systemd/system
+../../common/documentserver/systemd/ds-docservice.service /usr/lib/systemd/system
+../../common/documentserver/systemd/ds-converter.service /usr/lib/systemd/system
+../../common/documentserver/systemd/ds-metrics.service /usr/lib/systemd/system
+ifelse('M4_DS_ADMINPANEL_ENABLE', '1',
+../../common/documentserver/systemd/ds-adminpanel.service /usr/lib/systemd/system,)
+
+../../common/documentserver/sudoers/documentserver /etc/sudoers.d
 
 ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 ../../common/documentserver-example/systemd/*.service /usr/lib/systemd/system,)

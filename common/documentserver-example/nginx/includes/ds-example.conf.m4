@@ -6,6 +6,8 @@ location ~ ^(\/welcome\/.*)$ {
 
 location /example/ {
   proxy_pass http://example/;
+  proxy_intercept_errors on;
+  error_page 502 503 504 /welcome/example-disabled.html;
 
   proxy_set_header X-Forwarded-Host $the_host;
   proxy_set_header X-Forwarded-Proto $the_scheme;

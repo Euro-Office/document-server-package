@@ -85,11 +85,11 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 
 [Files]
-Source: "redist\postgresql-18.0-1-windows-x64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
+Source: "redist\postgresql-18.1-2-windows-x64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\certbot-2.6.0.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\Redis-7.4.0-Windows-x64.msi"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
-Source: "redist\otp_win64_26.2.1.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
-Source: "redist\rabbitmq-server-3.12.11.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
+Source: "redist\otp_win64_27.3.4.6.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
+Source: "redist\rabbitmq-server-4.2.1.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\FireDaemon-OpenSSL-x64-3.3.0.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\python-3.11.3-amd64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\vcredist2013_x64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
@@ -106,8 +106,8 @@ Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
 Name: "Prerequisites\Certbot"; Description: "Certbot"; Flags: checkablealone; Types: full; Check: not IsCertbotInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: checkablealone; Types: full custom compact; Check: not IsOpenSSLInstalled;
 Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: not IsPythonInstalled;
-Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.0"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
-Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 3.12.11"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
+Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
+Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.2.1"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
 Name: "Prerequisites\Redis"; Description: "Redis 7.4.0"; Flags: checkablealone; Types: full; Check:not IsRedisInstalled;
 Name: "Prerequisites\VC2013"; Description: "Visual C++ 2013 Update 5 Redistributable"; Flags: checkablealone; Types: full; Check: not IsVC2013Installed;
 Name: "Prerequisites\VC2022"; Description: "Visual C++ 2015-2022 Redistributable"; Flags: checkablealone; Types: full; Check:not IsVC2015To2022Installed;
@@ -121,6 +121,14 @@ begin
         Result := true;
       wpSelectComponents:
       begin
+        if WizardIsComponentSelected('Prerequisites\VC2013') then
+        begin
+          Dependency_AddBundledVC2013;
+        end;
+        if WizardIsComponentSelected('Prerequisites\VC2022') then
+        begin
+          Dependency_AddBundledVC2015To2022;
+        end;
         if WizardIsComponentSelected('Prerequisites\Redis') then
         begin
           Dependency_AddBundledRedis;
@@ -145,14 +153,6 @@ begin
         if WizardIsComponentSelected('Prerequisites\OpenSSL') then
         begin
           Dependency_AddBundledOpenSSL;
-        end;
-        if WizardIsComponentSelected('Prerequisites\VC2013') then
-        begin
-          Dependency_AddBundledVC2013;
-        end;
-        if WizardIsComponentSelected('Prerequisites\VC2022') then
-        begin
-          Dependency_AddBundledVC2015To2022;
         end;
        end;
     end;

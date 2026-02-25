@@ -87,9 +87,9 @@ WINSW := $(EXE_BUILD_DIR)/winsw/WinSW-x64.exe
 
 PYTHON := $(EXE_BUILD_DIR)/redist/python-3.11.3-amd64.exe
 OPENSSL := $(EXE_BUILD_DIR)/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
-RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-3.12.11.exe
-ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_26.2.1.exe
-POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-18.0-1-windows-x64.exe
+RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-4.2.1.exe
+ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_27.3.4.6.exe
+POSTGRESQL := $(EXE_BUILD_DIR)/redist/postgresql-18.1-2-windows-x64.exe
 REDIS := $(EXE_BUILD_DIR)/redist/Redis-7.4.0-Windows-x64.msi
 CERTBOT := $(EXE_BUILD_DIR)/redist/certbot-2.6.0.exe
 VC2013 := $(EXE_BUILD_DIR)/redist/vcredist2013_x64.exe
@@ -184,6 +184,14 @@ TARGET := $(PLATFORM)_$(ARCHITECTURE)
 DS_BIN_REPO := ./ds-repo
 DS_BIN := ./$(TARGET)/ds-bin-$(PRODUCT_VERSION)$(ARCH_EXT)
 
+ifeq ($(PLATFORM),win)
+	ADMIN_DISABLED_COMMANDS := net start DsAdminPanelSvc
+	EXAMPLE_DISABLED_COMMANDS := net start DsExampleSvc
+else
+	ADMIN_DISABLED_COMMANDS := sudo systemctl start ds-adminpanel
+	EXAMPLE_DISABLED_COMMANDS := sudo systemctl start ds-example
+endif
+
 ISCC := iscc
 ISCC_PARAMS += -Qp
 ISCC_PARAMS += -DVERSION=$(PRODUCT_VERSION).$(BUILD_NUMBER)
@@ -220,7 +228,6 @@ DEB_DEPS += deb/build/debian/$(PACKAGE_NAME).dirs
 
 COMMON_DEPS += common/documentserver/nginx/includes/ds-common.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-docservice.conf
-COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
 COMMON_DEPS += common/documentserver/nginx/includes/ds-letsencrypt.conf
 COMMON_DEPS += common/documentserver/nginx/includes/http-common.conf
 COMMON_DEPS += common/documentserver/nginx/ds-ssl.conf.tmpl
@@ -228,6 +235,11 @@ COMMON_DEPS += common/documentserver/nginx/ds.conf.tmpl
 COMMON_DEPS += common/documentserver/nginx/ds.conf
 COMMON_DEPS += common/documentserver-example/nginx/includes/ds-example.conf
 COMMON_DEPS += $(DS_MIME_TYPES)
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
+COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
+endif
 
 LINUX_DEPS += common/documentserver/logrotate/ds.conf
 
@@ -237,7 +249,6 @@ LINUX_DEPS_CLEAN += common/documentserver/logrotate/*.conf
 LINUX_DEPS += common/documentserver/systemd/ds-converter.service
 LINUX_DEPS += common/documentserver/systemd/ds-docservice.service
 LINUX_DEPS += common/documentserver/systemd/ds-metrics.service
-LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
 LINUX_DEPS += common/documentserver-example/systemd/ds-example.service
 
 LINUX_DEPS_CLEAN += common/documentserver/systemd/*.service
@@ -292,6 +303,22 @@ M4_PARAMS += -D M4_DS_EXAMPLE='$(DS_EXAMPLE)'
 M4_PARAMS += -D M4_DEV_NULL='$(DEV_NULL)'
 M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
 
+RPMBUILD_BINARY_PAYLOAD ?= w9T$(shell nproc).xzdio
+
+RPM_PARAMS += --define '_package_name $(PACKAGE_NAME)'
+RPM_PARAMS += --define '_product_version $(PRODUCT_VERSION)'
+RPM_PARAMS += --define '_company_name $(COMPANY_NAME)'
+RPM_PARAMS += --define '_product_name $(PRODUCT_NAME)'
+RPM_PARAMS += --define '_publisher_name $(PUBLISHER_NAME)'
+RPM_PARAMS += --define '_publisher_url $(PUBLISHER_URL)'
+RPM_PARAMS += --define '_support_url $(SUPPORT_URL)'
+RPM_PARAMS += --define '_support_mail $(SUPPORT_MAIL)'
+RPM_PARAMS += --define '_company_name_low $(COMPANY_NAME_LOW)'
+RPM_PARAMS += --define '_product_name_low $(PRODUCT_NAME_LOW)'
+RPM_PARAMS += --define '_ds_prefix $(DS_PREFIX)'
+RPM_PARAMS += --define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)'
+RPM_PARAMS += --define "__strip /bin/true"
+
 .PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
 
 all: rpm deb apt-rpm
@@ -338,6 +365,10 @@ clean:
 documentserver:
 	mkdir -p $(DOCUMENTSERVER_FILES)
 	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
+
+ifneq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+	rm -rf $(DOCUMENTSERVER)/server/AdminPanel
+endif
 
 	mkdir -p $(DOCUMENTSERVER_CONFIG)
 	mkdir -p $(DOCUMENTSERVER_CONFIG)/log4js
@@ -428,6 +459,18 @@ documentserver-example:
 	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
+	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
+else
+	rm -f $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
+	sed -i '/<!-- BEGIN ADMIN PANEL SECTION -->/,/<!-- END ADMIN PANEL SECTION -->/d' \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/docker.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux-rpm.html \
+		$(DOCUMENTSERVER_EXAMPLE)/welcome/win.html
+endif
 
 	echo "Done" > $@
 
@@ -439,20 +482,9 @@ $(APT_RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 	cd $(@D)/../../.. && rpmbuild \
 		-bb \
 		--define '_topdir $(@D)/../../../builddir' \
-		--define '_package_name $(PACKAGE_NAME)' \
-		--define '_product_version $(PRODUCT_VERSION)' \
 		--define '_build_number $(BUILD_NUMBER)$(APT_RPM_RELEASE_SUFFIX)' \
-		--define '_company_name $(COMPANY_NAME)' \
-		--define '_product_name $(PRODUCT_NAME)' \
-		--define '_publisher_name $(PUBLISHER_NAME)' \
-		--define '_publisher_url $(PUBLISHER_URL)' \
-		--define '_support_url $(SUPPORT_URL)' \
-		--define '_support_mail $(SUPPORT_MAIL)' \
-		--define '_company_name_low $(COMPANY_NAME_LOW)' \
-		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
-		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload w7.xzdio' \
 		--target $(RPM_ARCH) \
+		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
 rpm/$(PACKAGE_NAME).spec : rpm/package.spec
@@ -463,20 +495,9 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 	cd $(@D)/../../.. && rpmbuild \
 		-bb \
 		--define '_topdir $(@D)/../../../builddir' \
-		--define '_package_name $(PACKAGE_NAME)' \
-		--define '_product_version $(PRODUCT_VERSION)' \
 		--define '_build_number $(BUILD_NUMBER)$(RPM_RELEASE_SUFFIX)' \
-		--define '_company_name $(COMPANY_NAME)' \
-		--define '_product_name $(PRODUCT_NAME)' \
-		--define '_publisher_name $(PUBLISHER_NAME)' \
-		--define '_publisher_url $(PUBLISHER_URL)' \
-		--define '_support_url $(SUPPORT_URL)' \
-		--define '_support_mail $(SUPPORT_MAIL)' \
-		--define '_company_name_low $(COMPANY_NAME_LOW)' \
-		--define '_product_name_low $(PRODUCT_NAME_LOW)' \
-		--define '_ds_prefix $(DS_PREFIX)' \
-		--define '_binary_payload w7.xzdio' \
 		--target $(RPM_ARCH) \
+		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
 ifeq ($(COMPANY_NAME_LOW),onlyoffice)
@@ -484,6 +505,10 @@ M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
+endif
+
+ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+M4_PARAMS += -D M4_DS_ADMINPANEL_ENABLE=1
 endif
 
 ifneq ($(PLUGIN_MANAGER_FILE),)
@@ -514,7 +539,7 @@ deb/build/debian/$(PACKAGE_NAME).% : deb/template/package.%.m4
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
 
 $(DEB): $(DEB_DEPS) $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
-	cd deb/build && dpkg-buildpackage -b -uc -us -a$(DEB_ARCH)
+	+cd deb/build && dpkg-buildpackage -b -uc -us -a$(DEB_ARCH)
 
 %.exe:
 	cd $(@D) && $(ISCC) $(ISCC_PARAMS) $(iss_file)
@@ -555,11 +580,11 @@ $(DS_BIN): documentserver
 
 $(WINSW)      : url = https://github.com/winsw/winsw/releases/download/v3.0.0-alpha.11/WinSW-x64.exe
 $(CERTBOT)    : url = https://github.com/certbot/certbot/releases/download/v2.6.0/certbot-beta-installer-win_amd64_signed.exe
-$(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-26.2.1/otp_win64_26.2.1.exe
+$(ERLANG)     : url = https://github.com/erlang/otp/releases/download/OTP-27.3.4.6/otp_win64_27.3.4.6.exe
 $(OPENSSL)    : url = https://download.onlyoffice.com/install/windows/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
-$(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-18.0-1-windows-x64.exe
+$(POSTGRESQL) : url = https://get.enterprisedb.com/postgresql/postgresql-18.1-2-windows-x64.exe
 $(PYTHON)     : url = https://www.python.org/ftp/python/3.11.3/python-3.11.3-amd64.exe
-$(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.12.11/rabbitmq-server-3.12.11.exe
+$(RABBITMQ)   : url = https://github.com/rabbitmq/rabbitmq-server/releases/download/v4.2.1/rabbitmq-server-4.2.1.exe
 $(REDIS)      : url = https://github.com/ONLYOFFICE/redis-windows/releases/download/7.4.0/Redis-7.4.0-Windows-x64.msi
 $(VC2013)     : url = https://download.visualstudio.microsoft.com/download/pr/10912041/cee5d6bca2ddbcd039da727bf4acb48a/vcredist_x64.exe
 $(VC2022)     : url = https://aka.ms/vs/17/release/vc_redist.x64.exe
