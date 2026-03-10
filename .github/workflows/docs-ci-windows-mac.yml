@@ -1,0 +1,431 @@
+name: "Docs CI (Windows/Mac)"
+
+run-name: >-
+    Docs CI Test [Build #${{ inputs.build }} 
+                          Version: ${{ inputs.version }}
+                    ]
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: 'Please specify package build'
+        type: string
+        required: true
+      version:
+        description: 'Please specify package version'
+        type: string
+        required: true
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Build matrices
+        id: matrix
+        shell: bash
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          BUILD: ${{ github.event.inputs.build }}
+          PACKAGE_URL: ${{ secrets.PACKAGE_URL }}
+        run: |
+          set -ex
+          
+          # Make scripts executable
+          chmod +x ${{ github.workspace }}/.github/scripts/get_windows_server_packages.sh
+          chmod +x ${{ github.workspace }}/.github/scripts/get_windows_desktop_packages.sh
+          chmod +x ${{ github.workspace }}/.github/scripts/get_macos_desktop_packages.sh
+          
+          # Run scripts to build matrices
+          ${{ github.workspace }}/.github/scripts/get_windows_server_packages.sh
+          ${{ github.workspace }}/.github/scripts/get_windows_desktop_packages.sh
+          ${{ github.workspace }}/.github/scripts/get_macos_desktop_packages.sh
+          
+    outputs:
+      windows-server-packages: ${{ steps.matrix.outputs.windows-server-packages }}
+      windows-desktop-packages: ${{ steps.matrix.outputs.windows-desktop-packages }}
+      macos-desktop-packages: ${{ steps.matrix.outputs.macos-desktop-packages }}
+
+  server-windows:
+    needs: prepare
+    name: "Server-win-${{ matrix.edition }}-${{ github.event.inputs.version }}:${{ github.event.inputs.build }}"
+    if: ${{ needs.prepare.outputs.windows-server-packages != '' }}
+    runs-on: windows-2022
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      BUILD: ${{ github.event.inputs.build }}
+      EDITION: ${{ matrix.edition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: ${{ fromJSON(needs.prepare.outputs.windows-server-packages) }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Init env
+        shell: pwsh
+        run: |
+          switch ($env:EDITION) {
+            "community"  { $PRODUCT_EDITION = "" }
+            "enterprise" { $PRODUCT_EDITION = "-EE" }
+            "developer"  { $PRODUCT_EDITION = "-DE" }
+          }
+          echo "PRODUCT_EDITION=$PRODUCT_EDITION"  | Out-File -Append -FilePath $env:GITHUB_ENV
+          echo "VERSION=$($env:VERSION)"           | Out-File -Append -FilePath $env:GITHUB_ENV
+          echo "BUILD=$($env:BUILD)"               | Out-File -Append -FilePath $env:GITHUB_ENV
+      
+      - uses: ikalnytskyi/action-setup-postgres@v8
+        with:
+          username: postgres
+          password: postgres
+          database: postgres
+          port: 5432
+          postgres-version: "14"
+          ssl: true
+        id: postgres
+           
+      - name: Download
+        shell: pwsh
+        run: |
+            $url    = "${{ secrets.PACKAGE_URL }}/server/win/inno"
+            $ver    = $env:VERSION
+            $build  = $env:BUILD
+            $edition= $env:PRODUCT_EDITION
+        
+            $preq = "ONLYOFFICE-DocumentServer-Prerequisites-$ver.$build-x64.exe"
+            
+            $packageFile = "ONLYOFFICE-DocumentServer$edition-$ver.$build-x64.exe"
+        
+            Write-Host "Downloading $preq"
+            curl -L "$url/$preq" -o $preq
+        
+            Write-Host "Downloading $packageFile"
+            curl -L "$url/$packageFile" -o $packageFile
+           
+      - name: Install
+        shell: cmd
+        run: |
+           ONLYOFFICE-DocumentServer-Prerequisites-%VERSION%.%BUILD%-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LOG="C:\install-log-prereq.txt"
+           ONLYOFFICE-DocumentServer%PRODUCT_EDITION%-%VERSION%.%BUILD%-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DS_PORT=8200 /LOG="C:\install-log.txt"
+    
+      - name: Verify
+        shell: pwsh
+        run: |
+         ls "C:\Program Files\ONLYOFFICE\DocumentServer"
+         if (!(Test-Path "C:\Program Files\ONLYOFFICE\DocumentServer")) {
+              Write-Error "App not installed!"
+         }
+         Write-Host "== Running services =="
+         Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Running" }
+    
+         Write-Host "== ONLYOFFICE services =="
+         Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*onlyoffice*" -or $_.DisplayName -like "*onlyoffice*" }
+    
+         Write-Host "== Processes =="
+         Get-Process
+    
+         Write-Host "== Open ports =="
+         netstat -ano
+
+      - name: get service logs
+        if: always()
+        shell: pwsh
+        run: |
+          $logRoot = "C:\Program Files\ONLYOFFICE\DocumentServer\Log"
+          $nginxLogs = "C:\Program Files\ONLYOFFICE\DocumentServer\nginx\logs"
+            
+          Write-Host "=== NGINX LOGS ==="
+          if (Test-Path $nginxLogs) {
+              Get-ChildItem -Recurse $nginxLogs | ForEach-Object {
+                  if (-not $_.PSIsContainer) {
+                      Write-Host "`n--- $($_.FullName) ---"
+                      try { Get-Content $_.FullName -ErrorAction Stop }
+                      catch { Write-Host "ERROR: $($_.Exception.Message)" }
+                  }
+              }
+          }
+            
+          Write-Host "`n=== DOCUMENTSERVER LOGS ==="
+          if (Test-Path $logRoot) {
+              Get-ChildItem -Recurse $logRoot | ForEach-Object {
+                  if (-not $_.PSIsContainer) {
+                      Write-Host "`n--- $($_.FullName) ---"
+                      try { Get-Content $_.FullName -ErrorAction Stop }
+                      catch { Write-Host "ERROR: $($_.Exception.Message)" }
+                  }
+              }
+          } else {
+              Write-Host "Log root directory not found: $logRoot"
+          }
+            
+      - name: Wait for healthcheck
+        shell: pwsh
+        run: |
+            $timeout = 300    
+            $interval = 5      
+            $elapsed = 0
+        
+            Write-Host "Waiting for healthcheck at http://127.0.0.1:8200/healthcheck ..."
+        
+            while ($elapsed -lt $timeout) {
+                try {
+                    $response = Invoke-WebRequest -Uri "http://127.0.0.1:8200/healthcheck" -UseBasicParsing -TimeoutSec 2
+                    $body = $response.Content.Trim()
+        
+                    Write-Host "[$elapsed sec] Got response:"
+                    Write-Host "  StatusCode: $($response.StatusCode)"
+                    Write-Host "  Body: '$body'"
+        
+                    if ($body -eq "true") {
+                        Write-Host "Healthcheck OK!"
+                        exit 0
+                    }
+                }
+                catch {
+                    Write-Host "[$elapsed sec] ERROR calling endpoint:"
+                    Write-Host "  $($_.Exception.Message)"
+                }
+        
+                Start-Sleep -Seconds $interval
+                $elapsed += $interval
+            }
+        
+            Write-Error "Service did NOT return 'true' within 5 minutes!"
+            exit 1
+
+  desktop-windows:
+    name: "Desktop-${{ matrix.type }}-${{ matrix.edition }}-${{ matrix.platform }}-${{ github.event.inputs.version }}:${{ github.event.inputs.build }}"
+    needs: prepare
+    if: ${{ needs.prepare.outputs.windows-desktop-packages != '' }}
+    runs-on: ${{ matrix.platform == 'arm64' && 'windows-11-arm' || 'windows-latest' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.windows-desktop-packages) }}
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      BUILD: ${{ github.event.inputs.build }}
+      TYPE: ${{ matrix.type }}
+      EDITION: ${{ matrix.edition }}
+      PLATFORM: ${{ matrix.platform }}
+    steps:
+    - name: Init env
+      shell: pwsh
+      run: |
+          switch ($env:EDITION) {
+            "community"  { $PRODUCT_EDITION = "" }
+            "enterprise" { $PRODUCT_EDITION = "-Enterprise" }
+            "standalone" { $PRODUCT_EDITION = "-Standalone" }
+          }
+          
+          switch ($env:TYPE) {
+            "portable"            { $PACKAGE_PATH = "generic" }
+            "inno-setup"          { $PACKAGE_PATH = "inno" }
+            "advanced-installer"  { $PACKAGE_PATH = "advinst" }
+          }
+          echo "PRODUCT_EDITION=$PRODUCT_EDITION"  | Out-File -Append -FilePath $env:GITHUB_ENV
+          echo "PACKAGE_PATH=$PACKAGE_PATH"        | Out-File -Append -FilePath $env:GITHUB_ENV
+          echo "VERSION=$($env:VERSION)"           | Out-File -Append -FilePath $env:GITHUB_ENV
+          echo "BUILD=$($env:BUILD)"               | Out-File -Append -FilePath $env:GITHUB_ENV
+          
+    - name: Download
+      shell: pwsh
+      run: |
+          $url      = "${{ secrets.PACKAGE_URL }}/desktop/win/$env:PACKAGE_PATH"
+          $ver      = $env:VERSION
+          $build    = $env:BUILD
+          $edition  = $env:PRODUCT_EDITION
+          $platform = $env:PLATFORM
+        
+          switch ($env:TYPE) {
+            "portable"            { $ext = "zip" }
+            "inno-setup"          { $ext = "exe" }
+            "advanced-installer"  { $ext = "msi" }
+          }
+          
+          $file = "ONLYOFFICE-DesktopEditors$edition-$ver.$build-$platform.$ext"
+        
+          Write-Host "Downloading $file from $url"
+          curl -L "$url/$file" -o $file
+         
+    - name: Install or Extract
+      shell: pwsh
+      run: |
+          $ver      = $env:VERSION
+          $build    = $env:BUILD
+          $edition  = $env:PRODUCT_EDITION
+          $platform = $env:PLATFORM
+          
+          switch ($env:TYPE) {
+            "portable" {
+              $file = "ONLYOFFICE-DesktopEditors$edition-$ver.$build-$platform.zip"
+              Write-Host "Extracting portable package: $file"
+              Expand-Archive -Path $file -DestinationPath "C:\ONLYOFFICE-Portable" -Force
+            }
+            "inno-setup" {
+              $file = "ONLYOFFICE-DesktopEditors$edition-$ver.$build-$platform.exe"
+              Write-Host "Installing inno-setup package: $file"
+              Start-Process -FilePath $file -ArgumentList "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/LOG=C:\desktop-install-log-$env:EDITION-$platform.txt" -Wait
+            }
+            "advanced-installer" {
+              $file = "ONLYOFFICE-DesktopEditors$edition-$ver.$build-$platform.msi"
+              Write-Host "Installing MSI package: $file"
+              Start-Process -FilePath "msiexec.exe" -ArgumentList "/i", $file, "/qn", "/L*V", "C:\desktop-install-log-$env:EDITION-$platform.txt" -Wait
+            }
+          }
+
+    - name: Verify
+      shell: pwsh
+      run: |
+         switch ($env:TYPE) {
+           "portable" {
+             $path = "C:\ONLYOFFICE-Portable"
+             if (!(Test-Path $path)) {
+                 Write-Error "Portable package not extracted!"
+             }
+             Write-Host "Files in portable directory:"
+             ls $path
+           }
+           default {
+             # Determine installation path based on architecture
+             if ($env:PLATFORM -eq "x86") {
+               $path = "C:\Program Files (x86)\ONLYOFFICE\DesktopEditors"
+             } elseif ($env:PLATFORM -eq "arm64") {
+               # ARM64 apps typically install to standard Program Files on ARM Windows
+               $path = "C:\Program Files\ONLYOFFICE\DesktopEditors"
+             } else {
+               $path = "C:\Program Files\ONLYOFFICE\DesktopEditors"
+             }
+             
+             if (!(Test-Path $path)) {
+                 Write-Error "App not installed at: $path"
+             }
+             Write-Host "Files in DesktopEditors ($path):"
+             ls $path
+           }
+         }
+
+    - name: Check version and run binary
+      shell: pwsh
+      run: |
+          switch ($env:TYPE) {
+            "portable" {
+              $exe = "C:\ONLYOFFICE-Portable\DesktopEditors.exe"
+            }
+            default {
+              # Determine executable path based on architecture
+              if ($env:PLATFORM -eq "x86") {
+                $exe = "C:\Program Files (x86)\ONLYOFFICE\DesktopEditors\DesktopEditors.exe"
+              } elseif ($env:PLATFORM -eq "arm64") {
+                $exe = "C:\Program Files\ONLYOFFICE\DesktopEditors\DesktopEditors.exe"
+              } else {
+                $exe = "C:\Program Files\ONLYOFFICE\DesktopEditors\DesktopEditors.exe"
+              }
+            }
+          }
+          
+          if (!(Test-Path $exe)) {
+            Write-Error "Executable not found at: $exe"
+          }
+          
+          Write-Host "=== Version Info ==="
+          (Get-Item $exe).VersionInfo
+          
+          Write-Host "=== Running DesktopEditors with --help ==="
+          try {
+            Start-Process -FilePath $exe -ArgumentList "--help" -NoNewWindow -Wait
+            Write-Host "Exit code: $LASTEXITCODE"
+          }
+          catch {
+            Write-Host "Failed to run executable: $_"
+          }
+
+    - name: Upload install log
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+         name: desktop-windows-log-${{ matrix.type }}-${{ matrix.edition }}-${{ matrix.platform }}
+         path: C:\desktop-install-log-${{ matrix.edition }}-${{ matrix.platform }}.txt
+
+  desktop-mac:
+    name: "Desktop-mac-${{ matrix.architecture }}-${{ matrix.edition }}-${{ github.event.inputs.version }}:${{ github.event.inputs.build }}"
+    if: ${{ needs.prepare.outputs.macos-desktop-packages != '' }}
+    needs: prepare
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.prepare.outputs.macos-desktop-packages) }}
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      BUILD: ${{ github.event.inputs.build }}
+      ARCHITECTURE: ${{ matrix.architecture }}
+      EDITION: ${{ matrix.edition }}
+    steps:
+      - name: Init env
+        shell: bash
+        run: |
+          case "${EDITION}" in
+            "community")  PRODUCT_PREFIX="" ;;
+            "enterprise") PRODUCT_PREFIX="Enterprise-" ;;
+          esac
+          
+          case "${ARCHITECTURE}" in
+            "arm")    PACKAGE_PATH="arm/${VERSION}/${BUILD}" ;;
+            "x86_64") PACKAGE_PATH="x86_64/${VERSION}/${BUILD}" ;;
+            "v8")     PACKAGE_PATH="v8/${VERSION}/${BUILD}" ;;
+          esac
+          
+          echo "PRODUCT_PREFIX=${PRODUCT_PREFIX}" >> $GITHUB_ENV
+          echo "PACKAGE_PATH=${PACKAGE_PATH}" >> $GITHUB_ENV
+          
+      - name: Download
+        shell: bash
+        run: |
+          URL="${{ secrets.PACKAGE_URL }}/desktop/mac/${PACKAGE_PATH}"
+          
+          if [ "${ARCHITECTURE}" = "v8" ]; then
+            FILE="ONLYOFFICE-v8-${VERSION}-${BUILD}.dmg"
+          else
+            FILE="ONLYOFFICE-${PRODUCT_PREFIX}${ARCHITECTURE}-${VERSION}-${BUILD}.dmg"
+          fi
+          
+          echo "Downloading ${FILE} from ${URL}"
+          curl -L "${URL}/${FILE}" -o "${FILE}"
+          
+      - name: Mount DMG
+        shell: bash
+        run: |
+          if [ "${ARCHITECTURE}" = "v8" ]; then
+            DMG="ONLYOFFICE-v8-${VERSION}-${BUILD}.dmg"
+          else
+            DMG="ONLYOFFICE-${PRODUCT_PREFIX}${ARCHITECTURE}-${VERSION}-${BUILD}.dmg"
+          fi
+          
+          echo "Mounting ${DMG}..."
+          hdiutil attach "${DMG}" -mountpoint /Volumes/ONLYOFFICE
+          
+      - name: Verify
+        shell: bash
+        run: |
+          echo "Files in mounted DMG:"
+          ls -la /Volumes/ONLYOFFICE
+          
+          APP_PATH="/Volumes/ONLYOFFICE/ONLYOFFICE.app"
+          if [ ! -d "${APP_PATH}" ]; then
+            echo "ERROR: ONLYOFFICE.app not found!"
+            exit 1
+          fi
+          
+          echo "=== App Info ==="
+          /usr/bin/defaults read "${APP_PATH}/Contents/Info.plist" CFBundleShortVersionString || echo "Version not found"
+          
+      - name: Unmount DMG
+        if: always()
+        shell: bash
+        run: |
+          hdiutil detach /Volumes/ONLYOFFICE || true
+
