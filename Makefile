@@ -205,7 +205,7 @@ endif
 ISCC_PARAMS += -DBRANDING_DIR='$(shell cygpath -a -w "$(BRANDING_DIR)/exe")'
 ifdef ENABLE_SIGNING
 ISCC_PARAMS += -DSIGN
-ISCC_PARAMS += -S'byparam=signtool.exe sign /a /v /n $(firstword $(PUBLISHER_NAME)) /t http://timestamp.digicert.com $$f'
+ISCC_PARAMS += -S'byparam=powershell -ExecutionPolicy Bypass -File $$q$(WORKSPACE)\documents-pipeline\scripts\Sign.ps1$$q -File $$f'
 endif
 
 EXE_PR_DEPS := $(POSTGRESQL) $(WINACME) $(REDIS) $(ERLANG) $(RABBITMQ) $(OPENSSL) $(PYTHON) $(VC2013) $(VC2022)
