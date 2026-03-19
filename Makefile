@@ -495,8 +495,8 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
-ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
+ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
