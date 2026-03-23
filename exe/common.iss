@@ -146,7 +146,7 @@ DefaultGroupName        ={#sCompanyName}
 ;WizardImageFile         = data\dialogpicture.bmp
 ;WizardSmallImageFile    = data\dialogicon.bmp
 
-WizardSizePercent         = 110
+WizardSizePercent         = 115
 UsePreviousAppDir         = yes
 DirExistsWarning          =no
 DefaultDirName            ={commonpf}\{#sAppPath}
