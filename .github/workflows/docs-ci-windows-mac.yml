@@ -1,4 +1,4 @@
-name: "Docs CI (Windows/Mac)"
+name: "Docs-CI (install/test) (Windows/Mac)"
 
 run-name: >-
     Docs CI Test [Build #${{ inputs.build }} 
@@ -64,7 +64,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Init env
         shell: pwsh
         run: |
@@ -76,7 +76,7 @@ jobs:
           echo "PRODUCT_EDITION=$PRODUCT_EDITION"  | Out-File -Append -FilePath $env:GITHUB_ENV
           echo "VERSION=$($env:VERSION)"           | Out-File -Append -FilePath $env:GITHUB_ENV
           echo "BUILD=$($env:BUILD)"               | Out-File -Append -FilePath $env:GITHUB_ENV
-      
+
       - uses: ikalnytskyi/action-setup-postgres@v8
         with:
           username: postgres
@@ -86,7 +86,7 @@ jobs:
           postgres-version: "14"
           ssl: true
         id: postgres
-           
+
       - name: Download
         shell: pwsh
         run: |
@@ -94,39 +94,46 @@ jobs:
             $ver    = $env:VERSION
             $build  = $env:BUILD
             $edition= $env:PRODUCT_EDITION
-        
+
             $preq = "ONLYOFFICE-DocumentServer-Prerequisites-$ver.$build-x64.exe"
-            
+
             $packageFile = "ONLYOFFICE-DocumentServer$edition-$ver.$build-x64.exe"
-        
+
             Write-Host "Downloading $preq"
             curl -L "$url/$preq" -o $preq
-        
+
             Write-Host "Downloading $packageFile"
             curl -L "$url/$packageFile" -o $packageFile
-           
+
       - name: Install
         shell: cmd
         run: |
            ONLYOFFICE-DocumentServer-Prerequisites-%VERSION%.%BUILD%-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LOG="C:\install-log-prereq.txt"
            ONLYOFFICE-DocumentServer%PRODUCT_EDITION%-%VERSION%.%BUILD%-x64.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DS_PORT=8200 /LOG="C:\install-log.txt"
-    
+
       - name: Verify
         shell: pwsh
         run: |
          ls "C:\Program Files\ONLYOFFICE\DocumentServer"
          if (!(Test-Path "C:\Program Files\ONLYOFFICE\DocumentServer")) {
+         @"
+         ## ❌ Installation Failed: Server Windows
+
+         - Version: $env:VERSION
+         - Build: $env:BUILD
+         - Edition: $env:EDITION
+         "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
               Write-Error "App not installed!"
          }
          Write-Host "== Running services =="
          Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Status -eq "Running" }
-    
+
          Write-Host "== ONLYOFFICE services =="
          Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*onlyoffice*" -or $_.DisplayName -like "*onlyoffice*" }
-    
+
          Write-Host "== Processes =="
          Get-Process
-    
+
          Write-Host "== Open ports =="
          netstat -ano
 
@@ -136,7 +143,7 @@ jobs:
         run: |
           $logRoot = "C:\Program Files\ONLYOFFICE\DocumentServer\Log"
           $nginxLogs = "C:\Program Files\ONLYOFFICE\DocumentServer\nginx\logs"
-            
+
           Write-Host "=== NGINX LOGS ==="
           if (Test-Path $nginxLogs) {
               Get-ChildItem -Recurse $nginxLogs | ForEach-Object {
@@ -147,7 +154,7 @@ jobs:
                   }
               }
           }
-            
+
           Write-Host "`n=== DOCUMENTSERVER LOGS ==="
           if (Test-Path $logRoot) {
               Get-ChildItem -Recurse $logRoot | ForEach-Object {
@@ -160,25 +167,25 @@ jobs:
           } else {
               Write-Host "Log root directory not found: $logRoot"
           }
-            
+
       - name: Wait for healthcheck
         shell: pwsh
         run: |
             $timeout = 300    
             $interval = 5      
             $elapsed = 0
-        
+
             Write-Host "Waiting for healthcheck at http://127.0.0.1:8200/healthcheck ..."
-        
+
             while ($elapsed -lt $timeout) {
                 try {
                     $response = Invoke-WebRequest -Uri "http://127.0.0.1:8200/healthcheck" -UseBasicParsing -TimeoutSec 2
                     $body = $response.Content.Trim()
-        
+
                     Write-Host "[$elapsed sec] Got response:"
                     Write-Host "  StatusCode: $($response.StatusCode)"
                     Write-Host "  Body: '$body'"
-        
+
                     if ($body -eq "true") {
                         Write-Host "Healthcheck OK!"
                         exit 0
@@ -188,13 +195,127 @@ jobs:
                     Write-Host "[$elapsed sec] ERROR calling endpoint:"
                     Write-Host "  $($_.Exception.Message)"
                 }
-        
+
                 Start-Sleep -Seconds $interval
                 $elapsed += $interval
             }
-        
+
             Write-Error "Service did NOT return 'true' within 5 minutes!"
             exit 1
+
+      - name: Start Example Service
+        shell: pwsh
+        run: |
+           Start-Service -Name "DsExampleSvc"
+           Start-Sleep -Seconds 5
+           Get-Service -Name "DsExampleSvc"
+
+      - name: Setup Git Credentials
+        shell: pwsh
+        env:
+          TOKEN_GITEA: ${{ secrets.TOKEN_GITEA }}
+        run: |
+          # Clone with token
+          git clone "https://${env:TOKEN_GITEA}@git.onlyoffice.com/ONLYOFFICE-QA/Dep.Tests.git" dep-tests
+
+      - name: Initialize Submodules
+        shell: pwsh
+        working-directory: dep-tests
+        run: |
+            git config --global url."https://${{ secrets.TOKEN_GH }}@github.com/".insteadOf "https://github.com/"
+            git submodule update --init
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        shell: pwsh
+        working-directory: dep-tests/puppeteer/engine
+        run: |
+          # Silent install
+          npm install --silent --no-progress 2>&1 | Out-Null
+
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "Dependency installation failed"
+              exit 1
+          }
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: 120
+
+      - name: Execute Smoke Tests
+        shell: pwsh
+        working-directory: dep-tests/puppeteer/engine
+        continue-on-error: true
+        run: |
+            $tests = @(
+              "tests/desktop/word/smoke/check_disabled_reset_crop_button.js",
+              "tests/desktop/word/smoke/check_active_crop_button.js",
+              "tests/desktop/word/smoke/check_reset_crop.js",
+              "tests/desktop/word/smoke/check_search_while_drawing.js",
+              "tests/desktop/word/smoke/open-close-file-tab.js",
+              "tests/desktop/word/smoke/insert_chart_into_header.js",
+              "tests/desktop/word/smoke/insert_table_line_spacing_header_footer.js",
+              "tests/desktop/spreadsheets/smoke/check_replace_all.js",
+              "tests/desktop/spreadsheets/smoke/data_entry_use_tab_button.js",
+              "tests/desktop/presentation/smoke/delete_all_slides.js",
+              "tests/desktop/presentation/smoke/select_slides_with_shift_and_delete.js",
+              "tests/desktop/presentation/smoke/copy_all_objects_on_slide.js",
+              "tests/desktop/presentation/smoke/smoke_test_presentation.js",
+              "tests/desktop/pdf-form/smoke/checkbox_with_one_key.js",
+              "tests/desktop/pdf-form/smoke/field_format.js",
+              "tests/desktop/pdf-form/smoke/combobox_with_one_key.js",
+              "tests/desktop/pdf-form/smoke/dropdown_witn_one_key.js",
+              "tests/desktop/pdf-form/smoke/field_with_one_key.js",
+              "tests/desktop/pdf/smoke/check_find_for_a_specific_pdf.js",
+              "tests/desktop/pdf/smoke/check_undo_after_add_text_comment.js",
+              "tests/desktop/pdf/smoke/check_undo_for_edit_text.js",
+              "tests/desktop/pdf/smoke/reload_pdf_after_insert_page.js"
+            )
+
+            foreach ($test in $tests) {
+              python run.py `
+                --config config_chrome_win.json `
+                $test `
+                --config_params "runOptions.disableAnimation=true" `
+                --config_params "testOptions.url=http://127.0.0.1:8200/example" `
+                *>&1 |
+                Where-Object { $_ -notmatch "Running test" } |
+                Tee-Object -Append -FilePath "../test-output.log"
+            }
+
+      - name: Test Summary
+        if: always()
+        shell: pwsh
+        run: |
+            $log = Get-Content "dep-tests/puppeteer/test-output.log" -ErrorAction SilentlyContinue
+
+            $failed = $log | Where-Object { $_ -match "Test Failed|Verification failed" }
+            $passed = $log | Where-Object { $_ -match "Test Passed" }
+
+            $summary = @"
+            ## Test Results
+
+            ✅ Passed: $($passed.Count)
+            ❌ Failed: $($failed.Count)
+
+            "@
+
+            if ($failed.Count -gt 0) {
+              $summary += "### Failed Tests`n`n"
+              foreach ($line in $failed) {
+                if ($line -match 'tests\\(.+\.js)') {
+                  $testName = $matches[1] -replace '\\', '/'
+                  $summary += "- ❌ ``$testName```n"
+                }
+              }
+            }
+
+            $summary | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
 
   desktop-windows:
     name: "Desktop-${{ matrix.type }}-${{ matrix.edition }}-${{ matrix.platform }}-${{ github.event.inputs.version }}:${{ github.event.inputs.build }}"
@@ -220,7 +341,7 @@ jobs:
             "enterprise" { $PRODUCT_EDITION = "-Enterprise" }
             "standalone" { $PRODUCT_EDITION = "-Standalone" }
           }
-          
+
           switch ($env:TYPE) {
             "portable"            { $PACKAGE_PATH = "generic" }
             "inno-setup"          { $PACKAGE_PATH = "inno" }
@@ -284,6 +405,15 @@ jobs:
            "portable" {
              $path = "C:\ONLYOFFICE-Portable"
              if (!(Test-Path $path)) {
+         @"
+         ## ❌ Installation Failed: Desktop Windows
+
+         - Version: $env:VERSION
+         - Build: $env:BUILD
+         - Edition: $env:EDITION
+         - Platform: $env:PLATFORM
+         - Type: $env:TYPE
+         "@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Append
                  Write-Error "Portable package not extracted!"
              }
              Write-Host "Files in portable directory:"
@@ -413,19 +543,26 @@ jobs:
         run: |
           echo "Files in mounted DMG:"
           ls -la /Volumes/ONLYOFFICE
-          
+
           APP_PATH="/Volumes/ONLYOFFICE/ONLYOFFICE.app"
           if [ ! -d "${APP_PATH}" ]; then
+            cat >> $GITHUB_STEP_SUMMARY << EOF
+            ## ❌ Installation Failed: Desktop Mac
+
+            - Version: $VERSION
+            - Build: $BUILD
+            - Edition: $EDITION
+            - Architecture: $ARCHITECTURE
+          EOF
             echo "ERROR: ONLYOFFICE.app not found!"
             exit 1
           fi
           
           echo "=== App Info ==="
           /usr/bin/defaults read "${APP_PATH}/Contents/Info.plist" CFBundleShortVersionString || echo "Version not found"
-          
+  
       - name: Unmount DMG
         if: always()
         shell: bash
         run: |
           hdiutil detach /Volumes/ONLYOFFICE || true
-
