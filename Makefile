@@ -2,7 +2,7 @@ PWD := $(shell pwd)
 CURL := curl -s -L -o
 TOUCH := touch
 
-COMPANY_NAME ?= ONLYOFFICE
+COMPANY_NAME ?= EURO-OFFICE
 PRODUCT_NAME ?= DocumentServer
 PRODUCT_SHORT_NAME ?= $(firstword $(subst -, ,$(PRODUCT_NAME)))
 
@@ -10,15 +10,16 @@ COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
 PRODUCT_NAME_LOW = $(shell echo $(PRODUCT_NAME) | tr A-Z a-z)
 PRODUCT_SHORT_NAME_LOW = $(shell echo $(PRODUCT_SHORT_NAME) | tr A-Z a-z)
 
-PUBLISHER_NAME ?= Ascensio System SIA
-PUBLISHER_URL ?= http://onlyoffice.com
-SUPPORT_URL ?= http://support.onlyoffice.com
-SUPPORT_MAIL ?= support@onlyoffice.com
+PUBLISHER_NAME ?= Euro-Office
+PUBLISHER_URL ?= http://github.com/euro-office
+SUPPORT_URL ?= http://github.com/euro-office
+SUPPORT_MAIL ?= support@euro-office.com
 
 PRODUCT_VERSION ?= 0.0.0
 BUILD_NUMBER ?= 0
 
 BRANDING_DIR ?= .
+BUILD_OUTPUT_DIR ?= ../build_tools/out
 
 PACKAGE_NAME := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME_LOW)
 PACKAGE_VERSION := $(PRODUCT_VERSION)-$(BUILD_NUMBER)
@@ -236,10 +237,8 @@ COMMON_DEPS += common/documentserver/nginx/ds.conf
 COMMON_DEPS += common/documentserver-example/nginx/includes/ds-example.conf
 COMMON_DEPS += $(DS_MIME_TYPES)
 
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
 LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
 COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
-endif
 
 LINUX_DEPS += common/documentserver/logrotate/ds.conf
 
@@ -364,11 +363,7 @@ clean:
 		
 documentserver:
 	mkdir -p $(DOCUMENTSERVER_FILES)
-	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
-
-ifneq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
-	rm -rf $(DOCUMENTSERVER)/server/AdminPanel
-endif
+	cp -rf -t $(DOCUMENTSERVER) $(BUILD_OUTPUT_DIR)/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
 
 	mkdir -p $(DOCUMENTSERVER_CONFIG)
 	mkdir -p $(DOCUMENTSERVER_CONFIG)/log4js
@@ -447,11 +442,14 @@ endif
 
 documentserver-example:
 	mkdir -p $(DOCUMENTSERVER_EXAMPLE)
-	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)-example/* common/documentserver-example/welcome
+	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) $(BUILD_OUTPUT_DIR)/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)-example/* common/documentserver-example/welcome
 	
 	mkdir -p $(DOCUMENTSERVER_EXAMPLE_CONFIG)
 
 	mv -f $(DOCUMENTSERVER_EXAMPLE)/config/*.json $(DOCUMENTSERVER_EXAMPLE_CONFIG)
+
+	# rename product specific folders
+	sed "s|onlyoffice\/documentserver|"$(DS_PREFIX)"|"  -i $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
 
 	# Prevent for modification original config
 	chmod ug=r $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
@@ -500,8 +498,8 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		$(RPM_PARAMS) \
 		$(PACKAGE_NAME).spec
 
-ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
+ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
@@ -551,7 +549,7 @@ $(EXE_PR): iss_file = prerequisites.iss
 $(EXE_PR): $(EXE_PR_DEPS)
 
 $(TAR):
-	cd ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW) && \
+	cd $(BUILD_OUTPUT_DIR)/$(TARGET)/$(COMPANY_NAME_LOW) && \
 	tar -czf $(TAR) $(PRODUCT_SHORT_NAME_LOW)-snap
 
 $(NGINX):
