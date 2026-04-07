@@ -193,7 +193,6 @@ else
 endif
 
 ISCC := iscc
-ISCC_PARAMS += -Qp
 ISCC_PARAMS += -DVERSION=$(PRODUCT_VERSION).$(BUILD_NUMBER)
 ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver))
 ISCC_PARAMS += -DEDITION=community
