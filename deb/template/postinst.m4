@@ -414,7 +414,7 @@ ifelse('M4_DS_ADMINPANEL_ENABLE','1',`mkdir -p "$LOG_DIR/adminpanel"
 				fi
 			done
 			
-			for SVC in ds-example ifelse('M4_DS_ADMINPANEL_ENABLE','1',`ds-adminpanel',`'); do
+			for SVC in ds-metrics ds-example ifelse('M4_DS_ADMINPANEL_ENABLE','1',`ds-adminpanel',`'); do
 				if [ -e /usr/lib/systemd/system/$SVC.service ]; then
 					systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
 				fi
