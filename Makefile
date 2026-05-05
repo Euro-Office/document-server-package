@@ -401,7 +401,7 @@ endif
 
 	[ -f $(LICENSE_FILE) ] \
 		&& cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) \
-		|| cp -f -t $(DOCUMENTSERVER) LICENSE.txt
+		|| cp -f -t $(DOCUMENTSERVER) LICENSE
 
 	chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/x2t$(EXEC_EXT)
 	#chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/docbuilder$(EXEC_EXT)
