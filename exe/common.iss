@@ -372,15 +372,15 @@ Filename: "{app}\bin\documentserver-flush-cache.bat"; Parameters: "-r false"; Fl
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services===undefined)this.services={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring===undefined)this.services.CoAuthoring={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.sql===undefined)this.services.CoAuthoring.sql={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbHost = '{code:GetDbHost}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbPort = '{code:GetDbPort}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbUser = '{code:GetDbUser}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbPass = '{code:GetDbPwd}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbName = '{code:GetDbName}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.sql===undefined)this.services.CoAuthoring.sql={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbHost = '{code:GetDbHost}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbPort = '{code:GetDbPort}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbUser = '{code:GetDbUser}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbPass = '{code:GetDbPwd}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.sql.dbName = '{code:GetDbName}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
 
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.rabbitmq===undefined)this.rabbitmq={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.rabbitmq.url = '{code:GetRabbitMqProto}://{code:GetRabbitMqUser}:{code:GetRabbitMqPwd}@{code:GetRabbitMqHost}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.rabbitmq===undefined)this.rabbitmq={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
+Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.rabbitmq.url = '{code:GetRabbitMqProto}://{code:GetRabbitMqUser}:{code:GetRabbitMqPwd}@{code:GetRabbitMqHost}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
 
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring.redis===undefined)this.services.CoAuthoring.redis={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""this.services.CoAuthoring.redis.host = '{code:GetRedisHost}'"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"; Check: IsCommercial;
@@ -505,9 +505,9 @@ Name: "Program"; Description: "{cm:Program}"; Types: full compact custom; Flags:
 Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
 Name: "Prerequisites\WinAcme"; Description: "WinAcme v2.2.9.1701"; Flags: checkablealone; Types: full; Check: not IsWinAcmeInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: fixed; Types: full custom compact; Check: not IsOpenSSLInstalled;
-Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: not IsPythonInstalled;
-Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: not IsPostgreSQLInstalled;
-Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.2.1"; Flags: checkablealone; Types: full; Check: not IsRabbitMQInstalled;
+Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: IsCommercial and not IsPythonInstalled;
+Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsPostgreSQLInstalled;
+Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.2.1"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRabbitMQInstalled;
 Name: "Prerequisites\Redis"; Description: "Redis 7.4.0"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRedisInstalled and not UseLocalStorage;
 
 [Code]
@@ -1090,40 +1090,40 @@ end;
 
 procedure InitializeWizard;
 begin
-  DbPage := CreateInputQueryPage(
-    wpPreparing,
-    ExpandConstant('{cm:Postgre}'),
-    FmtMessage(ExpandConstant('{cm:PackageConfigure}'), ['{#PostgreSQL}' + '...']),
-    FmtMessage(ExpandConstant('{cm:PackageConnection}'), ['{#PostgreSQL}']));
-  DbPage.Add(ExpandConstant('{cm:Host}'), False);
-  DbPage.Add(ExpandConstant('{cm:Port}'), False);
-  DbPage.Add(ExpandConstant('{cm:User}'), False);
-  DbPage.Add(ExpandConstant('{cm:Password}'), True);
-  DbPage.Add(ExpandConstant('{cm:PostgreDb}'), False);
-
-  DbPage.Values[0] := GetDbHost('');
-  DbPage.Values[1] := GetDbPort('');
-  DbPage.Values[2] := GetDbUser('');
-  DbPage.Values[3] := GetDbPwd('');
-  DbPage.Values[4] := GetDbName('');
-
-  RabbitMqPage := CreateInputQueryPage(
-    DbPage.ID,
-    ExpandConstant('{cm:RabbitMq}'),
-    FmtMessage(ExpandConstant('{cm:PackageConfigure}'), ['{#RabbitMQ}' + '...']),
-    FmtMessage(ExpandConstant('{cm:PackageConnection}'), ['{#RabbitMQ}']));
-  RabbitMqPage.Add(ExpandConstant('{cm:Host}'), False);
-  RabbitMqPage.Add(ExpandConstant('{cm:User}'), False);
-  RabbitMqPage.Add(ExpandConstant('{cm:Password}'), True);
-  RabbitMqPage.Add(ExpandConstant('{cm:Protocol}'), False);
-
-  RabbitMqPage.Values[0] := GetRabbitMqHost('');
-  RabbitMqPage.Values[1] := GetRabbitMqUser('');
-  RabbitMqPage.Values[2] := GetRabbitMqPwd('');
-  RabbitMqPage.Values[3] := GetRabbitMqProto('');
-
   if IsCommercial then
   begin
+    DbPage := CreateInputQueryPage(
+      wpPreparing,
+      ExpandConstant('{cm:Postgre}'),
+      FmtMessage(ExpandConstant('{cm:PackageConfigure}'), ['{#PostgreSQL}' + '...']),
+      FmtMessage(ExpandConstant('{cm:PackageConnection}'), ['{#PostgreSQL}']));
+    DbPage.Add(ExpandConstant('{cm:Host}'), False);
+    DbPage.Add(ExpandConstant('{cm:Port}'), False);
+    DbPage.Add(ExpandConstant('{cm:User}'), False);
+    DbPage.Add(ExpandConstant('{cm:Password}'), True);
+    DbPage.Add(ExpandConstant('{cm:PostgreDb}'), False);
+
+    DbPage.Values[0] := GetDbHost('');
+    DbPage.Values[1] := GetDbPort('');
+    DbPage.Values[2] := GetDbUser('');
+    DbPage.Values[3] := GetDbPwd('');
+    DbPage.Values[4] := GetDbName('');
+
+    RabbitMqPage := CreateInputQueryPage(
+      DbPage.ID,
+      ExpandConstant('{cm:RabbitMq}'),
+      FmtMessage(ExpandConstant('{cm:PackageConfigure}'), ['{#RabbitMQ}' + '...']),
+      FmtMessage(ExpandConstant('{cm:PackageConnection}'), ['{#RabbitMQ}']));
+    RabbitMqPage.Add(ExpandConstant('{cm:Host}'), False);
+    RabbitMqPage.Add(ExpandConstant('{cm:User}'), False);
+    RabbitMqPage.Add(ExpandConstant('{cm:Password}'), True);
+    RabbitMqPage.Add(ExpandConstant('{cm:Protocol}'), False);
+
+    RabbitMqPage.Values[0] := GetRabbitMqHost('');
+    RabbitMqPage.Values[1] := GetRabbitMqUser('');
+    RabbitMqPage.Values[2] := GetRabbitMqPwd('');
+    RabbitMqPage.Values[3] := GetRabbitMqProto('');
+
     RedisPage := CreateInputQueryPage(
       RabbitMqPage.ID,
       ExpandConstant('{cm:Redis}'),
@@ -1370,23 +1370,23 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := false;
-  if WizardSilent() = false then
+
+  if not WizardSilent() then
   begin
-  case PageID of
-    DbPage.ID:
-      Result := CheckDbConnection;
-    RabbitMqPage.ID:
-      Result := CheckRabbitMqConnection;
-  else
     if IsCommercial then
     begin
-      if PageID = RedisPage.ID then
-      begin
-        Result := CheckRedisConnection or UseLocalStorage;
+      case PageID of
+        DbPage.ID:
+          Result := CheckDbConnection;
+
+        RabbitMqPage.ID:
+          Result := CheckRabbitMqConnection;
+
+        RedisPage.ID:
+          Result := CheckRedisConnection or UseLocalStorage;
       end;
     end;
   end;
- end;
 end;
 
 function ArrayLength(a: array of integer): Integer;
@@ -1431,36 +1431,27 @@ end;
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   Result := true;
-  if WizardSilent() = false then
+
+  if not WizardSilent() then
   begin
     case CurPageID of
-      DbPage.ID:
-      begin
-        InitDbParams(DbPage.Values[0], DbPage.Values[1], DbPage.Values[2], DbPage.Values[3], DbPage.Values[4]);
-        Result := CheckDbConnection();
-      end;
-      RabbitMqPage.ID:
-      begin
-        InitAmqpServerParams(RabbitMqPage.Values[0], RabbitMqPage.Values[1], RabbitMqPage.Values[2], RabbitMqPage.Values[3]);
-        Result := CheckRabbitMqConnection();
-      end;
       wpWelcome:
         Result := CheckPortOccupied();
       wpSelectComponents:
       begin
-           if WizardIsComponentSelected('Prerequisites\Redis') then
-           begin
-             Dependency_AddRedis;
-           end;
-           if WizardIsComponentSelected('Prerequisites\RabbitMq') then
-           begin
-             Dependency_AddErlang;
-             Dependency_AddRabbitMq;
-           end;
-           if WizardIsComponentSelected('Prerequisites\PostgreSQL') then
-           begin
-             Dependency_AddPostgreSQL;
-           end;
+        if WizardIsComponentSelected('Prerequisites\Redis') then
+        begin
+          Dependency_AddRedis;
+        end;
+        if WizardIsComponentSelected('Prerequisites\RabbitMq') then
+        begin
+          Dependency_AddErlang;
+          Dependency_AddRabbitMq;
+        end;
+        if WizardIsComponentSelected('Prerequisites\PostgreSQL') then
+        begin
+          Dependency_AddPostgreSQL;
+        end;
         if WizardIsComponentSelected('Prerequisites\WinAcme') then
         begin
           Dependency_AddWinAcme;
@@ -1473,16 +1464,30 @@ begin
         begin
           Dependency_AddOpenSSL;
         end;
-       end;
-       else
-         if IsCommercial then
+      end;
+    else
+      if IsCommercial then
+      begin
+        case CurPageID of
+          DbPage.ID:
           begin
-            if CurPageID = RedisPage.ID then
-            begin
-              InitRedisParams(RedisPage.Values[0]);
-              Result := CheckRedisConnection();
-            end;
-         end;
+            InitDbParams(DbPage.Values[0], DbPage.Values[1], DbPage.Values[2], DbPage.Values[3], DbPage.Values[4]);
+            Result := CheckDbConnection();
+          end;
+
+          RabbitMqPage.ID:
+          begin
+            InitAmqpServerParams(RabbitMqPage.Values[0], RabbitMqPage.Values[1], RabbitMqPage.Values[2], RabbitMqPage.Values[3]);
+            Result := CheckRabbitMqConnection();
+          end;
+
+          RedisPage.ID:
+          begin
+            InitRedisParams(RedisPage.Values[0]);
+            Result := CheckRedisConnection();
+          end;
+        end;
+      end;
     end;
   end;
 end;
