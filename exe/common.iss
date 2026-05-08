@@ -441,12 +441,12 @@ Filename: "{app}\bin\documentserver-update-securelink.bat"; Parameters: "{param:
 
 Filename: "{cmd}"; Parameters: "/C icacls ""{#NGINX_SRV_DIR}"" /remove:g *S-1-5-32-545"; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 
-Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE USER {#DbDefUser} WITH PASSWORD '{code:GetDbPwd}';"""; Flags: runhidden; Check: IsUsingDefaultDatabase and CreateDbDefUserAuth;
-Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE DATABASE {#DbDefName};"""; Flags: runhidden; Check: IsUsingDefaultDatabase;
-Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""ALTER DATABASE {#DbDefName} OWNER TO {#DbDefUser};"""; Flags: runhidden; Check: IsUsingDefaultDatabase;
+Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE USER {#DbDefUser} WITH PASSWORD '{code:GetDbPwd}';"""; Flags: runhidden; Check: IsUsingDefaultDatabase and CreateDbDefUserAuth and IsCommercial;
+Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""CREATE DATABASE {#DbDefName};"""; Flags: runhidden; Check: IsUsingDefaultDatabase and IsCommercial;
+Filename: "{#PSQL}"; Parameters: "-U {#DbAdminUserName} -w -q -c ""ALTER DATABASE {#DbDefName} OWNER TO {#DbDefUser};"""; Flags: runhidden; Check: IsUsingDefaultDatabase and IsCommercial;
 
-Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\removetbl.sql"""; Flags: runhidden; Check: IsNotClusterMode; StatusMsg: "{cm:RemoveDb}"
-Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\createdb.sql"""; Flags: runhidden; Check: CreateDbAuth; StatusMsg: "{cm:CreateDb}"
+Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\removetbl.sql"""; Flags: runhidden; Check: IsNotClusterMode and IsCommercial; StatusMsg: "{cm:RemoveDb}"
+Filename: "{#PSQL}"; Parameters: "-h {code:GetDbHost} -U {code:GetDbUser} -d {code:GetDbName} -p {code:GetDbPort} -w -q -f ""{app}\server\schema\postgresql\createdb.sql"""; Flags: runhidden; Check: CreateDbAuth and IsCommercial; StatusMsg: "{cm:CreateDb}"
 
 Filename: "{#WINSW}";   Parameters: "install ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:InstallSrv,{#CONVERTER_SRV}}"
 Filename: "{#WINSW}";   Parameters: "start ""{#CONVERTER_SRV_FILE}"""; Flags: runhidden; StatusMsg: "{cm:StartSrv,{#CONVERTER_SRV}}"
