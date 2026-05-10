@@ -1,7 +1,7 @@
 [Unit]
 Description=Docs Converter
-After=network.target syslog.target redis-server.service
-Wants=redis-server.service
+After=network.target syslog.target ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`redis-server.service')
+ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`Wants=redis-server.service')
 
 [Service]
 Type=simple

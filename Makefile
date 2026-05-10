@@ -236,7 +236,7 @@ COMMON_DEPS += common/documentserver/nginx/ds.conf
 COMMON_DEPS += common/documentserver-example/nginx/includes/ds-example.conf
 COMMON_DEPS += $(DS_MIME_TYPES)
 
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+ifneq ($(PRODUCT_NAME_LOW),documentserver)
 LINUX_DEPS += common/documentserver/systemd/ds-adminpanel.service
 COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
 endif
@@ -253,6 +253,7 @@ LINUX_DEPS += common/documentserver-example/systemd/ds-example.service
 
 LINUX_DEPS_CLEAN += common/documentserver/systemd/*.service
 LINUX_DEPS_CLEAN += common/documentserver-example/systemd/*.service
+LINUX_DEPS_CLEAN += common/documentserver/nginx/includes/*.conf
 
 LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.sh.m4))
 
@@ -263,9 +264,13 @@ endif
 
 LINUX_DEPS_CLEAN += common/documentserver/bin/*.sh
 
+LINUX_DEPS += rpm/requires.spec
+LINUX_DEPS += apt-rpm/requires.spec
 LINUX_DEPS += rpm/$(PACKAGE_NAME).spec
 LINUX_DEPS += apt-rpm/$(PACKAGE_NAME).spec
 
+LINUX_DEPS_CLEAN += rpm/requires.spec
+LINUX_DEPS_CLEAN += apt-rpm/requires.spec
 LINUX_DEPS_CLEAN += rpm/$(PACKAGE_NAME).spec
 LINUX_DEPS_CLEAN += apt-rpm/$(PACKAGE_NAME).spec
 
@@ -367,7 +372,7 @@ documentserver:
 	mkdir -p $(DOCUMENTSERVER_FILES)
 	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
 
-ifneq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+ifeq ($(PRODUCT_NAME_LOW),documentserver)
 	rm -rf $(DOCUMENTSERVER)/server/AdminPanel
 endif
 
@@ -383,11 +388,13 @@ endif
 	# rename db account params
 	sed 's|\("db.*": "\)onlyoffice\("\)|\1'$(ONLYOFFICE_VALUE)'\2|'  -i $(DOCUMENTSERVER_CONFIG)/*.json
 
+ifneq ($(PRODUCT_NAME_LOW),documentserver)
 	# rename db schema name
 	sed 's|onlyoffice|'$(ONLYOFFICE_VALUE)'|'  -i $(DOCUMENTSERVER)/server/schema/**/*.sql
 
 	# ignore CREATE DATABASE commands in MySQL
 	sed -r "s/^(CREATE DATABASE|USE)/-- \1/" -i $(DOCUMENTSERVER)/server/schema/mysql/*.sql
+endif
 
 	# rename product in license
 	sed 's|ONLYOFFICE|'$(COMPANY_NAME)'|'  -i $(DOCUMENTSERVER)/server/3rd-Party.txt
@@ -458,7 +465,7 @@ documentserver-example:
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
 
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+ifneq ($(PRODUCT_NAME_LOW),documentserver)
 	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
 else
 	rm -f $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
@@ -502,10 +509,6 @@ M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
-endif
-
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
-M4_PARAMS += -D M4_DS_ADMINPANEL_ENABLE=1
 endif
 
 ifneq ($(PLUGIN_MANAGER_FILE),)

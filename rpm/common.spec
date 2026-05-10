@@ -50,7 +50,7 @@ cp -r $DOCUMENTSERVER_CONFIG/* "$CONF_DIR/"
 mkdir -p "$LOG_DIR/docservice"
 mkdir -p "$LOG_DIR/converter"
 mkdir -p "$LOG_DIR/metrics"
-%{?adminpanel:mkdir -p "$LOG_DIR/adminpanel"}
+%{?is_commercial:mkdir -p "$LOG_DIR/adminpanel"}
 
 #make cache dir
 mkdir -p "$DATA_DIR/App_Data/cache/files"
@@ -67,7 +67,7 @@ mkdir -p %{buildroot}/usr/lib/systemd/system
 cp %{_builddir}/../../../common/documentserver/systemd/ds-docservice.service %{buildroot}/usr/lib/systemd/system
 cp %{_builddir}/../../../common/documentserver/systemd/ds-converter.service %{buildroot}/usr/lib/systemd/system
 cp %{_builddir}/../../../common/documentserver/systemd/ds-metrics.service %{buildroot}/usr/lib/systemd/system
-%{?adminpanel:cp %{_builddir}/../../../common/documentserver/systemd/ds-adminpanel.service %{buildroot}/usr/lib/systemd/system}
+%{?is_commercial:cp %{_builddir}/../../../common/documentserver/systemd/ds-adminpanel.service %{buildroot}/usr/lib/systemd/system}
 
 #install sudoers file
 mkdir -p %{buildroot}/etc/sudoers.d/
@@ -166,7 +166,7 @@ rm -rf "%{buildroot}"
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/metrics
-%{?adminpanel:%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/AdminPanel/server/adminpanel}
+%{?is_commercial:%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/AdminPanel/server/adminpanel}
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
 %if %{defined example}
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}-example/example
@@ -283,6 +283,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
     ${JSON} -I -q -e "if(this.services.CoAuthoring.secret.browser.string===undefined)this.services.CoAuthoring.secret.browser.string = '${JWT_SECRET}'"
   fi
 
+%if %{defined is_commercial}
   if [ -f ${LOCAL_CONFIG} ] && [[ -n "$($JSON services.CoAuthoring.sql)" ]]; then
     #load_db_params
     DB_HOST=$($JSON services.CoAuthoring.sql.dbHost)
@@ -345,6 +346,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
     echo ""
   fi
   chown ds:ds "${LOCAL_CONFIG}"
+%endif
 fi
 
 # generate allfonts.js, thumbnail and cache_tag
@@ -400,7 +402,7 @@ for SVC in %{package_services}; do
   fi
 done
 
-for SVC in ds-metrics ds-example %{?adminpanel:ds-adminpanel}; do
+for SVC in ds-metrics ds-example %{?is_commercial:ds-adminpanel}; do
   if [ -e /usr/lib/systemd/system/$SVC.service ]; then
     systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
   fi
@@ -426,7 +428,7 @@ case "$1" in
     # Uninstall
     # disconnect all users and stop running services
     documentserver-prepare4shutdown.sh
-    for SVC in %{package_services} ds-metrics ds-example %{?adminpanel:ds-adminpanel}; do
+    for SVC in %{package_services} ds-metrics ds-example %{?is_commercial:ds-adminpanel}; do
       if [ -e /usr/lib/systemd/system/$SVC.service ]; then
         systemctl stop $SVC
       fi
