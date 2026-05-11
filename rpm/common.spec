@@ -345,8 +345,8 @@ if [ "$IS_UPGRADE" = "true" ]; then
     echo "You should reconfigure the package using script \"/usr/bin/documentserver-configure.sh\""
     echo ""
   fi
-  chown ds:ds "${LOCAL_CONFIG}"
 %endif
+  chown ds:ds "${LOCAL_CONFIG}"
 fi
 
 # generate allfonts.js, thumbnail and cache_tag
