@@ -225,12 +225,6 @@ tune_local_configs(){
 }
 
 restart_services() {
-	[ -a /etc/nginx/conf.d/default.conf ] && \
-	mv /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.old
-
-	[ -a /etc/nginx/conf.d/onlyoffice-documentserver.conf ] && \
-	mv /etc/nginx/conf.d/onlyoffice-documentserver.conf /etc/nginx/conf.d/onlyoffice-documentserver.conf.old
-
 	echo -n "Restarting services... "
 	for SVC in M4_PACKAGE_SERVICES nginx; do
 		if [ -e /usr/lib/systemd/system/$SVC.service ]; then
@@ -538,6 +532,13 @@ setup_nginx(){
       semanage port -m -t http_port_t -p tcp $PORT >/dev/null 2>&1 || \
       true
   done
+
+  sed -i "s/ default_server//" /etc/nginx/nginx.conf
+  if [ -e /etc/nginx/conf.d/default.conf ]; then
+    mv -f /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.disabled
+    echo "Note: nginx default site disabled to avoid conflict with M4_PACKAGE_NAME."
+    echo "      Saved to /etc/nginx/conf.d/default.conf.disabled."
+  fi
 
   systemctl enable nginx
 }

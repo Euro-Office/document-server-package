@@ -287,9 +287,12 @@ setup_nginx(){
 
   # sed 's/{{DOCSERVICE_PORT}}/'${DOCSERVICE_PORT}'/'  -i $OO_CONF
   # sed 's/{{EXAMPLE_PORT}}/'${EXAMPLE_PORT}'/'  -i $OO_CONF
-		
-  rm -f /etc/nginx/sites-enabled/default
 
+  if [ -e /etc/nginx/sites-enabled/default ]; then
+    mv -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default.disabled
+    echo "Note: nginx default site disabled to avoid conflict with M4_PACKAGE_NAME."
+    echo "      Saved to /etc/nginx/sites-available/default.disabled."
+  fi
 }
 
 save_wopi_params() {
