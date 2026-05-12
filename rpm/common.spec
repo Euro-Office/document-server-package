@@ -398,7 +398,9 @@ systemctl daemon-reload
 for SVC in %{package_services}; do
   if [ -e /usr/lib/systemd/system/$SVC.service ]; then
     systemctl enable $SVC
-    systemctl restart $SVC
+    if [ "$IS_UPGRADE" = "true" ]; then
+      systemctl restart $SVC
+    fi
   fi
 done
 
