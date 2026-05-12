@@ -505,9 +505,7 @@ else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
 endif
 
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
 M4_PARAMS += -D M4_DS_ADMINPANEL_ENABLE=1
-endif
 
 ifneq ($(PLUGIN_MANAGER_FILE),)
 %.sh : %.sh.m4
