@@ -535,12 +535,10 @@ deb/build/debian/% : deb/template/%
 CC_LICENSE_FILE = $(wildcard $(dir $(LICENSE_FILE))LICENSE-CC.txt)
 deb/build/debian/copyright : deb/template/copyright.m4
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) -D M4_PACKAGE_VERSION=$(PACKAGE_VERSION)$(DEB_RELEASE_SUFFIX) $< > $@
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver))
 	awk -v MAIN_LICENSE="$(LICENSE_FILE)" -v CC_LICENSE="$(CC_LICENSE_FILE)" '\
 		/^License: CC-BY-SA-4.0$$/ { print; while ((getline l < CC_LICENSE)   > 0) print (l == "" ? " ." : " " l); next }\
 		/^License:/                { print; while ((getline l < MAIN_LICENSE) > 0) print (l == "" ? " ." : " " l); next }\
 		                           { print }' $@ > $@.tmp && mv $@.tmp $@
-endif
 
 deb/build/debian/% : deb/template/%.m4
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) -D M4_PACKAGE_VERSION=$(PACKAGE_VERSION)$(DEB_RELEASE_SUFFIX) $< > $@
