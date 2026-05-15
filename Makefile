@@ -459,16 +459,16 @@ documentserver-example:
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
 
-ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
+#ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver-de documentserver-ee))
 	sed -i "s|{{ADMIN_DISABLED_COMMANDS}}|$(ADMIN_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
-else
-	rm -f $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
-	sed -i '/<!-- BEGIN ADMIN PANEL SECTION -->/,/<!-- END ADMIN PANEL SECTION -->/d' \
-		$(DOCUMENTSERVER_EXAMPLE)/welcome/docker.html \
-		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux.html \
-		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux-rpm.html \
-		$(DOCUMENTSERVER_EXAMPLE)/welcome/win.html
-endif
+#else
+#	rm -f $(DOCUMENTSERVER_EXAMPLE)/welcome/admin-disabled.html
+#	sed -i '/<!-- BEGIN ADMIN PANEL SECTION -->/,/<!-- END ADMIN PANEL SECTION -->/d' \
+#		$(DOCUMENTSERVER_EXAMPLE)/welcome/docker.html \
+#		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux.html \
+#		$(DOCUMENTSERVER_EXAMPLE)/welcome/linux-rpm.html \
+#		$(DOCUMENTSERVER_EXAMPLE)/welcome/win.html
+#endif
 
 	echo "Done" > $@
 
