@@ -450,8 +450,9 @@ endif
 	echo "Done" > $@
 
 documentserver-example:
-	mkdir -p $(DOCUMENTSERVER_EXAMPLE)
-	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)-example/* common/documentserver-example/welcome
+	mkdir -p $(DOCUMENTSERVER_EXAMPLE)/welcome
+	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)-example/*
+	cp -rf ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/server/welcome/example/. $(DOCUMENTSERVER_EXAMPLE)/welcome/
 	
 	mkdir -p $(DOCUMENTSERVER_EXAMPLE_CONFIG)
 
