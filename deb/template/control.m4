@@ -10,7 +10,6 @@ Architecture: M4_DEB_ARCH
 Depends: ${shlibs:Depends}, ${misc:Depends}, 
   adduser,
   ca-certificates,
-  certbot,
   coreutils,
   curl,
   libasound2 | libasound2t64,
@@ -25,6 +24,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
   nginx-extras (>= 1.3.13),
 ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,
 `  postgresql-client (>= 9.1) | mysql-client | mysql-community-client | mariadb-client, 
+  certbot,
   redis-tools,'
 ,)dnl
   ttf-mscorefonts-installer,
