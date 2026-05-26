@@ -404,7 +404,7 @@ for SVC in %{package_services}; do
   fi
 done
 
-for SVC in ds-metrics ds-example %{?is_commercial:ds-adminpanel}; do
+for SVC in ds-metrics ds-example; do
   if [ -e /usr/lib/systemd/system/$SVC.service ]; then
     systemctl is-active --quiet "$SVC" && systemctl restart "$SVC"
   fi
@@ -430,7 +430,7 @@ case "$1" in
     # Uninstall
     # disconnect all users and stop running services
     documentserver-prepare4shutdown.sh
-    for SVC in %{package_services} ds-metrics ds-example %{?is_commercial:ds-adminpanel}; do
+    for SVC in %{package_services} ds-metrics ds-example; do
       if [ -e /usr/lib/systemd/system/$SVC.service ]; then
         systemctl stop $SVC
       fi

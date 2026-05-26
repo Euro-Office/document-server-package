@@ -50,7 +50,11 @@ EXE = $(EXE_BUILD_DIR)/$(COMPANY_NAME)-$(PRODUCT_NAME)-$(PRODUCT_VERSION).$(BUIL
 EXE_PR = $(EXE_BUILD_DIR)/$(COMPANY_NAME)-$(PRODUCT_NAME)-Prerequisites-$(PRODUCT_VERSION).$(BUILD_NUMBER)-x64.exe
 TAR = $(TAR_PACKAGE_DIR)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)$(TAR_RELEASE_SUFFIX)-$(TAR_ARCH).tar.gz
 
-PACKAGE_SERVICES ?= ds-docservice ds-converter
+ifeq ($(PRODUCT_NAME_LOW),documentserver)
+  PACKAGE_SERVICES ?= ds-docservice ds-converter
+else
+  PACKAGE_SERVICES ?= ds-docservice ds-converter ds-adminpanel
+endif
 
 DOCUMENTSERVER = common/documentserver/home
 DOCUMENTSERVER_BIN = common/documentserver/bin

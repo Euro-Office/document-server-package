@@ -400,7 +400,7 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 				fi
 			done
 			
-			for SVC in ds-metrics ds-example ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`ds-adminpanel',`'); do
+			for SVC in ds-metrics ds-example; do
 				if [ -e /usr/lib/systemd/system/$SVC.service ]; then
 					if systemctl is-active --quiet "$SVC" || systemctl is-enabled --quiet "$SVC"; then
 						systemctl restart "$SVC"
