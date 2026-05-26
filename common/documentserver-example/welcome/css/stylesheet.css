@@ -39,7 +39,7 @@ div {
 }
 
 a, a:hover, a:visited {
-    color: #FF6F3D;
+    color: #0082C9;
 }
 
 a:hover {
@@ -52,7 +52,7 @@ a:hover {
 }
 
 .black-block .content-block {
-    background-image: url(../css/footer_help.svg), url(../css/footer_github.svg);
+    background-image: url(../css/footer_help_eo.svg), url(../css/footer_github.svg);
     background-position: 0 64px, 100% 100px;
     background-repeat: no-repeat;
     box-sizing: border-box;
@@ -65,7 +65,7 @@ a:hover {
 }
 
 .button {
-    background: #FF6F3D;
+    background: #0082C9;
     border-radius: 3px;
     color: #FFFFFF;
     display: inline-block;
@@ -79,7 +79,7 @@ a:hover {
 }
 
 .button:hover {
-    background: #ff7a4b;
+    background: #00a5fd;
 }
 
 .content-block {
@@ -206,7 +206,7 @@ header img {
 }
 
 .orange-text {
-    color: #FF6F3D;
+    color: #0082C9;
 }
 
 pre {
