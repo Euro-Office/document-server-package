@@ -262,6 +262,11 @@ LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanag
 PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.sh.m4)
 endif
 
+# CE has no AdminPanel, so the host-side CLI wrapper is excluded from CE builds.
+ifeq ($(PRODUCT_NAME_LOW),documentserver)
+LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-admin.sh,$(LINUX_DEPS))
+endif
+
 LINUX_DEPS_CLEAN += common/documentserver/bin/*.sh
 
 LINUX_DEPS += rpm/requires.spec
