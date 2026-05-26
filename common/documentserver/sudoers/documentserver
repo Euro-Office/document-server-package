@@ -4,6 +4,7 @@ Defaults:ds !requiretty
 Cmnd_Alias DS_ROOT_SCRIPTS = \
   /usr/bin/documentserver-letsencrypt.sh *, \
   /usr/bin/documentserver-generate-allfonts.sh *, \
-  /usr/bin/documentserver-flush-cache.sh *
+  /usr/bin/documentserver-flush-cache.sh *, \
+  /usr/bin/documentserver-example.sh *
 
 ds ALL=(root) NOPASSWD: DS_ROOT_SCRIPTS
