@@ -6,7 +6,7 @@ COMPANY_NAME ?= EURO-OFFICE
 PRODUCT_NAME ?= DocumentServer
 PRODUCT_SHORT_NAME ?= $(firstword $(subst -, ,$(PRODUCT_NAME)))
 
-COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
+COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z | tr -s ' ' '-')
 PRODUCT_NAME_LOW = $(shell echo $(PRODUCT_NAME) | tr A-Z a-z)
 PRODUCT_SHORT_NAME_LOW = $(shell echo $(PRODUCT_SHORT_NAME) | tr A-Z a-z)
 
@@ -280,7 +280,7 @@ else
 ONLYOFFICE_VALUE := ds
 endif
 
-M4_PARAMS += -D M4_COMPANY_NAME=$(COMPANY_NAME)
+M4_PARAMS += -D M4_COMPANY_NAME='$(COMPANY_NAME)'
 M4_PARAMS += -D M4_PACKAGE_NAME=$(PACKAGE_NAME)
 M4_PARAMS += -D M4_PRODUCT_NAME=$(PRODUCT_NAME)
 M4_PARAMS += -D M4_PRODUCT_VERSION=$(PRODUCT_VERSION)
@@ -384,7 +384,7 @@ documentserver:
 	sed -r "s/^(CREATE DATABASE|USE)/-- \1/" -i $(DOCUMENTSERVER)/server/schema/mysql/*.sql
 
 	# rename product in license
-	sed 's|ONLYOFFICE|'$(COMPANY_NAME)'|'  -i $(DOCUMENTSERVER)/server/3rd-Party.txt
+	sed "s|ONLYOFFICE|$(COMPANY_NAME)|" -i $(DOCUMENTSERVER)/server/3rd-Party.txt
 	sed 's|DocumentServer|'$(PRODUCT_NAME)'|'  -i $(DOCUMENTSERVER)/server/3rd-Party.txt
 
 	# Prevent for modification original config
@@ -455,6 +455,8 @@ documentserver-example:
 	chmod ug=r $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
 
 	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+	sed "s|{{COMPANY_NAME}}|$(COMPANY_NAME)|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+	sed "s|{{COMPANY_NAME_LOW}}|"$(COMPANY_NAME_LOW)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
