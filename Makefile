@@ -307,6 +307,10 @@ M4_PARAMS += -D M4_SUPPORT_URL='$(SUPPORT_URL)'
 M4_PARAMS += -D M4_BRANDING_DIR='$(abspath $(BRANDING_DIR))'
 M4_PARAMS += -D M4_ONLYOFFICE_VALUE=$(ONLYOFFICE_VALUE)
 M4_PARAMS += -D M4_PLATFORM=$(PLATFORM)
+
+# Welcome page unified template: build-time platform / edition flags.
+WELCOME_PLATFORM ?= $(PLATFORM)
+HAS_ADMIN_PANEL  := $(if $(filter-out documentserver,$(PRODUCT_NAME_LOW)),true,false)
 M4_PARAMS += -D M4_DEB_ARCH='$(DEB_ARCH)'
 M4_PARAMS += -D M4_NGINX_CONF='$(NGINX_CONF)'
 M4_PARAMS += -D M4_NGINX_LOG='$(NGINX_LOG)'
@@ -471,6 +475,11 @@ documentserver-example:
 	chmod ug=r $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
 
 	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+
+	# Stamp unified welcome template placeholders.
+	sed -i "s|{{WELCOME_PLATFORM}}|$(WELCOME_PLATFORM)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/index.html
+	sed -i "s|{{HAS_ADMIN_PANEL}}|$(HAS_ADMIN_PANEL)|g"   $(DOCUMENTSERVER_EXAMPLE)/welcome/index.html
+	sed -i "s|{{PRODUCT_VERSION}}|$(PRODUCT_VERSION)|g"   $(DOCUMENTSERVER_EXAMPLE)/welcome/index.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html

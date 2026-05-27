@@ -140,10 +140,6 @@ symlinks -c \
   %{buildroot}%{_sysconfdir}/nginx/includes \
   %{buildroot}%{_sysconfdir}/logrotate.d 
 
-%if %{defined example}
-# index.html for rpm
-sed 's/linux.html/linux-rpm.html/g' -i "$DSE_NGINX_CONF/ds-example.conf"
-%endif
 
 # install license file
 mkdir -p %{buildroot}%{_datadir}/licenses/%{_package_name}
