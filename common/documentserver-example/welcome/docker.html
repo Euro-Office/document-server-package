@@ -57,7 +57,7 @@
             <h1>Testing before integration</h1>
             <p>Use the integrated test example, a simple doc management system, to check if the editors are running correctly.</p>
             <h3>Start test example:</h3>
-            <pre>sudo docker exec $(sudo docker ps -q) sudo supervisorctl start ds:example</pre>
+            <pre>sudo docker exec $(sudo docker ps -q) sudo supervisorctl start example</pre>
             <h3>Add it to the autostart:</h3>
             <pre>sudo docker exec $(sudo docker ps -q) sudo sed 's,autostart=false,autostart=true,' -i /etc/supervisor/conf.d/ds-example.conf</pre>
             <p>If you already installed test example, access it here:</p>
@@ -71,7 +71,7 @@
             <h1>Admin Panel - Server Management</h1>
             <p>Use Admin Panel to manage server configuration and monitoring.</p>
             <h3>Start Admin Panel:</h3>
-            <pre>sudo docker exec $(sudo docker ps -q) sudo supervisorctl start ds:adminpanel</pre>
+            <pre>sudo docker exec $(sudo docker ps -q) sudo supervisorctl start adminpanel</pre>
             <h3>Add it to the autostart:</h3>
             <pre>sudo docker exec $(sudo docker ps -q) sudo sed 's,autostart=false,autostart=true,' -i /etc/supervisor/conf.d/ds-adminpanel.conf</pre>
             <p>On first access, you'll need to complete initial setup using a bootstrap code from the server logs. The bootstrap code is valid for 1 hour and can be found by checking the Admin Panel logs.</p>

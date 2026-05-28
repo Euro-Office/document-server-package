@@ -454,9 +454,9 @@ documentserver-example:
 	# Prevent for modification original config
 	chmod ug=r $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
 
-	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
-	sed "s|{{COMPANY_NAME}}|$(COMPANY_NAME)|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
-	sed "s|{{COMPANY_NAME_LOW}}|"$(COMPANY_NAME_LOW)"|"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+	sed "s|{{OFFICIAL_PRODUCT_NAME}}|"$(OFFICIAL_PRODUCT_NAME)"|g"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+	sed "s|{{COMPANY_NAME}}|$(COMPANY_NAME)|g"  -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
+	sed "s|{{COMPANY_NAME_LOW}}|$(COMPANY_NAME_LOW)|g" -i $(DOCUMENTSERVER_EXAMPLE)/welcome/*.html
 
 	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
