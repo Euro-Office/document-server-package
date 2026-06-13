@@ -75,6 +75,8 @@
             <h3>Add it to the autostart:</h3>
             <pre>sudo docker exec $(sudo docker ps -q) sudo sed 's,autostart=false,autostart=true,' -i /etc/supervisor/conf.d/ds-adminpanel.conf</pre>
             <p>On first access, you'll need to complete initial setup using a bootstrap code from the server logs. The bootstrap code is valid for 1 hour and can be found by checking the Admin Panel logs.</p>
+            <p>Access the bootstrap code:</p>
+            <pre>sudo docker exec $(sudo docker ps -q) cat /var/log/euro-office/documentserver/adminpanel/out.log</pre>
             <a href="../admin/">
                 <div class="button">GO TO ADMIN PANEL</div>
             </a>
