@@ -181,7 +181,7 @@ else
 	endif
 	ifneq ($(filter aarch%,$(UNAME_M)),)
 		ARCHITECTURE := arm64
-		PKG_TARGET ?= node18-linux-arm64
+		PKG_TARGET ?= node18-linuxstatic-arm64
 	endif
 endif
 
