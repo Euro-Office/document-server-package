@@ -481,7 +481,7 @@ documentserver-example:
 	sed -i "s|{{HAS_ADMIN_PANEL}}|$(HAS_ADMIN_PANEL)|g"   $(DOCUMENTSERVER_EXAMPLE)/welcome/index.html
 	sed -i "s|{{PRODUCT_VERSION}}|$(PRODUCT_VERSION)|g"   $(DOCUMENTSERVER_EXAMPLE)/welcome/index.html
 
-	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
+	/usr/bin/find $(DOCUMENTSERVER_EXAMPLE)/welcome -depth -type f -name "*.html" -exec sed -i "s_{{year}}_$(shell date +"%Y")_g" {} \;
 	sed -i "s|{{EXAMPLE_DISABLED_COMMANDS}}|$(EXAMPLE_DISABLED_COMMANDS)|g" $(DOCUMENTSERVER_EXAMPLE)/welcome/example-disabled.html
 
 ifneq ($(PRODUCT_NAME_LOW),documentserver)
