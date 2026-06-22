@@ -302,10 +302,13 @@ Source: ..\common\documentserver\home\*;            DestDir: {app}; Excludes: "A
 Source: ..\common\documentserver\home\*.exe;        DestDir: {app}; Excludes: "adminpanel.exe"; Flags: ignoreversion recursesubdirs signonce; Components: Program
 Source: ..\common\documentserver\config\*;          DestDir: {app}\config; Flags: ignoreversion recursesubdirs; Permissions: users-readexec; Components: Program
 Source: local\local.json;                           DestDir: {app}\config; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
-Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat documentserver-generate-allfonts.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat documentserver-generate-allfonts.bat documentserver-admin.bat"; Flags: ignoreversion recursesubdirs; Components: Program
 Source: {#file "..\common\documentserver\bin\documentserver-generate-allfonts.bat"};         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion; Components: Program; DestName: "documentserver-generate-allfonts.bat"
 #ifdef DS_PLUGIN_INSTALLATION
 Source: ..\common\documentserver\bin\documentserver-pluginsmanager.bat;    DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
+#endif
+#ifdef DS_ADMIN
+Source: ..\common\documentserver\bin\documentserver-admin.bat;    DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
 #endif
 Source: ..\common\documentserver\bin\*.ps1;         DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
 Source: nginx\nginx.conf;                           DestDir: {#NGINX_SRV_DIR}\conf; Flags: ignoreversion recursesubdirs; Components: Program
