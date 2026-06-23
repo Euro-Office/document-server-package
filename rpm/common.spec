@@ -41,6 +41,7 @@ cp -r $DOCUMENTSERVER_HOME/* "$HOME_DIR/"
 mkdir -p "$BIN_DIR/"
 cp -r $DOCUMENTSERVER_BIN/*.sh "$BIN_DIR/"
 cp -r %{_builddir}/../../bin/*.sh "$BIN_DIR/"
+%{?is_commercial:%__ln_s documentserver-admin.sh "$BIN_DIR/documentserver-admin"}
 
 #install configs
 mkdir -p "$CONF_DIR/"
@@ -180,6 +181,7 @@ rm -rf "%{buildroot}"
 
 %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/*.so*
 %attr(744, root, root) %{_bindir}/documentserver-*.sh
+%{?is_commercial:%attr(-, root, root) %{_bindir}/documentserver-admin}
 %attr(-, root, root) %{_sysconfdir}/logrotate.d/*
 %attr(-, root, root) %{_sysconfdir}/nginx/%{nginx_conf_d}/*
 %attr(-, root, root) %{_sysconfdir}/nginx/includes/*
