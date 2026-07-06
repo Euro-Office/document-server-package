@@ -18,7 +18,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
   libcurl3-gnutls,
   libgtk-3-0,
   libstdc++6 (>= 4.8.4),
-  libxss1,
   libxtst6,
   logrotate,
   nginx-extras (>= 1.3.13),
@@ -28,7 +27,6 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,
   redis-tools,'
 ,)dnl
   ttf-mscorefonts-installer,
-  xvfb,
   openssl,
   xxd,
   zlib1g
