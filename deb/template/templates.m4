@@ -67,7 +67,7 @@ Description: RabbitMQ password:
 
 Template: M4_ONLYOFFICE_VALUE/ds-port
 Type: string
-Default: 80
+Default: 8083
 Description: M4_PRODUCT_NAME listening port:
 
 Template: M4_ONLYOFFICE_VALUE/docservice-port
