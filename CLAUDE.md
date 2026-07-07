@@ -1,6 +1,6 @@
 ## Project Overview
 
-ONLYOFFICE document-server-package — build and packaging system for ONLYOFFICE Docs across multiple platforms: DEB (Debian/Ubuntu), RPM (RHEL/CentOS/Fedora), APT-RPM, Windows EXE (Inno Setup), and TAR archives.
+ONLYOFFICE document-server-package — build and packaging system for ONLYOFFICE Docs across multiple platforms: DEB (Debian/Ubuntu), RPM (RHEL/CentOS/Fedora), Windows EXE (Inno Setup), and TAR archives.
 
 ## Tech Stack
 
@@ -22,7 +22,6 @@ common/documentserver/
 common/documentserver-example/  — Example app packaging
 deb/template/       — Debian package templates (control, postinst, prerm, etc.)
 rpm/                — RPM spec files and templates
-apt-rpm/            — APT-RPM spec files
 exe/                — Windows installer (Inno Setup scripts, data, nginx configs)
   InnoDependencyInstaller/  — Git submodule for Windows deps
   winsw/            — WinSW XML service configs (AdminPanel, Converter, DocService, Example, Proxy)

@@ -35,15 +35,12 @@ ifneq ($(filter aarch%,$(UNAME_M)),)
 	TAR_ARCH := aarch64
 endif
 
-APT_RPM_BUILD_DIR = $(PWD)/apt-rpm/builddir
 RPM_BUILD_DIR = $(PWD)/rpm/builddir
 EXE_BUILD_DIR = exe
 
-APT_RPM_PACKAGE_DIR = $(APT_RPM_BUILD_DIR)/RPMS/$(RPM_ARCH)
 RPM_PACKAGE_DIR = $(RPM_BUILD_DIR)/RPMS/$(RPM_ARCH)
 TAR_PACKAGE_DIR = $(PWD)
 
-APT_RPM = $(APT_RPM_PACKAGE_DIR)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)$(APT_RPM_RELEASE_SUFFIX).$(RPM_ARCH).rpm
 RPM = $(RPM_PACKAGE_DIR)/$(PACKAGE_NAME)-$(PACKAGE_VERSION)$(RPM_RELEASE_SUFFIX).$(RPM_ARCH).rpm
 DEB = deb/$(PACKAGE_NAME)_$(PACKAGE_VERSION)_$(DEB_ARCH)$(DEB_RELEASE_SUFFIX).deb
 EXE = $(EXE_BUILD_DIR)/$(COMPANY_NAME)-$(PRODUCT_NAME)-$(PRODUCT_VERSION).$(BUILD_NUMBER)-x64.exe
@@ -149,7 +146,7 @@ else
 		SHELL_EXT := .sh
 		ARCH_EXT := .zip
 		AR := 7z a -y
-		PACKAGES = deb rpm tar apt-rpm
+		PACKAGES = deb rpm tar
 		DS_PREFIX := $(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)
 		NGINX_CONF := /etc/nginx/includes
 		NGINX_LOG := /var/log/$(DS_PREFIX)
@@ -274,20 +271,14 @@ endif
 LINUX_DEPS_CLEAN += common/documentserver/bin/*.sh
 
 LINUX_DEPS += rpm/requires.spec
-LINUX_DEPS += apt-rpm/requires.spec
 LINUX_DEPS += rpm/$(PACKAGE_NAME).spec
-LINUX_DEPS += apt-rpm/$(PACKAGE_NAME).spec
 
 LINUX_DEPS_CLEAN += rpm/requires.spec
-LINUX_DEPS_CLEAN += apt-rpm/requires.spec
 LINUX_DEPS_CLEAN += rpm/$(PACKAGE_NAME).spec
-LINUX_DEPS_CLEAN += apt-rpm/$(PACKAGE_NAME).spec
 
 LINUX_DEPS += rpm/bin/documentserver-configure.sh
-LINUX_DEPS += apt-rpm/bin/documentserver-configure.sh
 
 LINUX_DEPS_CLEAN += rpm/bin/*.sh
-LINUX_DEPS_CLEAN += apt-rpm/bin/*.sh
 
 ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 ONLYOFFICE_VALUE := onlyoffice
@@ -340,9 +331,7 @@ RPM_PARAMS += --define "__strip /bin/true"
 
 .PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
 
-all: rpm deb apt-rpm
-
-apt-rpm:$(APT_RPM)
+all: rpm deb
 
 rpm: $(RPM)
 
@@ -364,7 +353,6 @@ clean:
 		deb/*.changes \
 		deb/*.ddeb \
 		deb/*.deb \
-		$(APT_RPM_BUILD_DIR)\
 		$(RPM_BUILD_DIR)\
 		$(TAR_PACKAGE_DIR)/*.tar.gz\
 		$(EXE_BUILD_DIR)/*.exe\
@@ -496,19 +484,6 @@ else
 endif
 
 	echo "Done" > $@
-
-apt-rpm/$(PACKAGE_NAME).spec : apt-rpm/package.spec
-	mv -f $< $@
-
-$(APT_RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
-	mkdir -p $(@D)
-	cd $(@D)/../../.. && rpmbuild \
-		-bb \
-		--define '_topdir $(@D)/../../../builddir' \
-		--define '_build_number $(BUILD_NUMBER)$(APT_RPM_RELEASE_SUFFIX)' \
-		--target $(RPM_ARCH) \
-		$(RPM_PARAMS) \
-		$(PACKAGE_NAME).spec
 
 rpm/$(PACKAGE_NAME).spec : rpm/package.spec
 	mv -f $< $@
