@@ -18,6 +18,7 @@ dnl -- tools
   xxd,
   curl,
   openssl,
+  iproute2,
   logrotate,
 dnl -- fonts
   ttf-mscorefonts-installer,

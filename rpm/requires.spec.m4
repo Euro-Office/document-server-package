@@ -11,6 +11,7 @@ Requires: logrotate
 Requires: openssl
 Requires: curl
 Requires: wget
+Requires: iproute
 # -- fonts
 Requires: liberation-mono-fonts
 Requires: msttcore-fonts-installer
