@@ -268,6 +268,14 @@ setup_nginx(){
   # db_get M4_ONLYOFFICE_VALUE/example-port || true
   # EXAMPLE_PORT="$RET"
   
+  if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+    echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
+    echo "  To reconfigure, run:" >&2
+    echo "    echo 'M4_ONLYOFFICE_VALUE/ds-port string <PORT>' | debconf-set-selections" >&2
+    echo "    dpkg-reconfigure -f noninteractive M4_PACKAGE_NAME" >&2
+    return 0
+  fi
+
   # setup ds port
   sed 's/\(listen .*:\)\([0-9]\{2,5\}\b\)\( default_server\)\?\(;\)/\1'${DS_PORT}'\3\4/' -i $DS_CONF
 
@@ -277,19 +285,17 @@ setup_nginx(){
   fi
 
   # install nginx config
-  if [ -d /etc/nginx/conf.d ] && [ -e /etc/nginx/conf.d/onlyoffice-documentserver.conf ]; then
-    mv /etc/nginx/conf.d/onlyoffice-documentserver.conf /etc/nginx/conf.d/onlyoffice-documentserver.conf.old
-  fi
-
   if [ -d /etc/nginx/conf.d ] && [ ! -e /etc/nginx/conf.d/ds.conf ]; then
 	  ln -s $DS_CONF /etc/nginx/conf.d/ds.conf
   fi
 
+  # validate the generated nginx configuration before it is applied
+  if ! nginx -t >/dev/null 2>&1; then
+    echo "Error: nginx configuration test failed. Run 'nginx -t' for details." >&2
+  fi
+
   # sed 's/{{DOCSERVICE_PORT}}/'${DOCSERVICE_PORT}'/'  -i $OO_CONF
   # sed 's/{{EXAMPLE_PORT}}/'${EXAMPLE_PORT}'/'  -i $OO_CONF
-		
-  rm -f /etc/nginx/sites-enabled/default
-
 }
 
 save_wopi_params() {

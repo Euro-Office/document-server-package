@@ -149,7 +149,7 @@ while [ "$1" != "" ]; do
 			echo "  Usage: bash documentserver-configure.sh [PARAMETER] [[PARAMETER], ...]"
 			echo
 			echo "    Parameters:"
-			echo "      -p, --dsport                 The value by that incoming connections are listened                             ( Defaults to 80 )"
+			echo "      -p, --dsport                 The value by that incoming connections are listened                             ( Defaults to 8083 )"
 			echo "      -je, --jwtenabled            Specifies the enabling the JSON Web Token validation                            ( Defaults to true )"
 			echo "      -js, --jwtsecret             Defines the secret key to validate the JSON Web Token in the request            ( Defaults to random secret )"
 			echo "      -jh, --jwtheader             Defines the http header that will be used to send the JSON Web Token            ( Defaults to Authorization )"
@@ -185,7 +185,7 @@ AMQP_SERVER_PROTO=${AMQP_SERVER_PROTO:-amqp}
 AMQP_SERVER_TYPE=${AMQP_SERVER_TYPE:-rabbitmq}
 
 DB_TYPE=${DB_TYPE:-postgres}
-DS_PORT=${DS_PORT:-80}
+DS_PORT=${DS_PORT:-8083}
 # DOCSERVICE_PORT=${DOCSERVICE_PORT:-8000}
 # EXAMPLE_PORT=${EXAMPLE_PORT:-3000}
 
@@ -215,12 +215,6 @@ tune_local_configs(){
 }
 
 restart_services() {
-	[ -a /etc/nginx/sites-available.d/default.conf ] && \
-	mv /etc/nginx/sites-available.d/default.conf /etc/nginx/sites-available.d/default.conf.old
-
-	[ -a /etc/nginx/sites-available.d/onlyoffice-documentserver.conf ] && \
-	mv /etc/nginx/sites-available.d/onlyoffice-documentserver.conf /etc/nginx/sites-available.d/onlyoffice-documentserver.conf.old
-
 	echo -n "Restarting services... "
 	for SVC in M4_PACKAGE_SERVICES nginx; do
 		if [ -e /usr/lib/systemd/system/$SVC.service ]; then
@@ -515,6 +509,12 @@ setup_nginx(){
   DS_CONF_TMPL=$NGINX_CONF_DIR/ds.conf.tmpl
   DS_CONF=$NGINX_CONF_DIR/ds.conf
 
+  if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+    echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
+    echo "  To reconfigure, run: documentserver-configure.sh --dsport <PORT>" >&2
+    return 0
+  fi
+
   cp -f ${DS_CONF_TMPL} ${DS_CONF}
   sed 's/\(listen .*:\)\([0-9]\{2,5\}\b\)\( default_server\)\?\(;\)/\1'${DS_PORT}'\3\4/' -i $DS_CONF
 
@@ -531,6 +531,7 @@ setup_nginx(){
   PORTS=()
   case $(/usr/sbin/getenforce) in
     enforcing|permissive)
+      PORTS+=("$DS_PORT")
       PORTS+=('8000')
       PORTS+=('3000')
 	  /usr/sbin/setsebool -P httpd_can_network_connect on
@@ -546,6 +547,11 @@ setup_nginx(){
       /usr/sbin/semanage port -m -t http_port_t -p tcp $PORT >/dev/null 2>&1 || \
       true
   done
+
+  # validate the generated nginx configuration before it is applied
+  if ! nginx -t >/dev/null 2>&1; then
+    echo "Error: nginx configuration test failed. Run 'nginx -t' for details." >&2
+  fi
 }
 
 create_local_configs
