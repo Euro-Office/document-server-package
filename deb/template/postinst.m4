@@ -408,7 +408,7 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 				fi
 			done
 
-			service nginx restart >/dev/null 2>&1
+			service nginx reload 2>/dev/null || service nginx start >/dev/null 2>&1
 		fi
 		echo "Congratulations, the M4_COMPANY_NAME M4_PRODUCT_NAME has been installed successfully!"
 		echo "$JWT_MESSAGE"
