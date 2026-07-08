@@ -256,19 +256,19 @@ LINUX_DEPS_CLEAN += common/documentserver/systemd/*.service
 LINUX_DEPS_CLEAN += common/documentserver-example/systemd/*.service
 LINUX_DEPS_CLEAN += common/documentserver/nginx/includes/*.conf
 
-LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.sh.m4))
+LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.m4))
 
 ifneq ($(COMPANY_NAME_LOW),onlyoffice)
-LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanager.sh,$(LINUX_DEPS))
-PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.sh.m4)
+LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanager,$(LINUX_DEPS))
+PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.m4)
 endif
 
 # CE has no AdminPanel, so the host-side CLI wrapper is excluded from CE builds.
 ifeq ($(PRODUCT_NAME_LOW),documentserver)
-LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-admin.sh,$(LINUX_DEPS))
+LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-admin,$(LINUX_DEPS))
 endif
 
-LINUX_DEPS_CLEAN += common/documentserver/bin/*.sh
+LINUX_DEPS_CLEAN += $(basename $(wildcard common/documentserver/bin/*.m4))
 
 LINUX_DEPS += rpm/requires.spec
 LINUX_DEPS += rpm/$(PACKAGE_NAME).spec
@@ -276,9 +276,9 @@ LINUX_DEPS += rpm/$(PACKAGE_NAME).spec
 LINUX_DEPS_CLEAN += rpm/requires.spec
 LINUX_DEPS_CLEAN += rpm/$(PACKAGE_NAME).spec
 
-LINUX_DEPS += rpm/bin/documentserver-configure.sh
+LINUX_DEPS += rpm/bin/documentserver-configure
 
-LINUX_DEPS_CLEAN += rpm/bin/*.sh
+LINUX_DEPS_CLEAN += rpm/bin/documentserver-configure
 
 ifeq ($(COMPANY_NAME_LOW),onlyoffice)
 ONLYOFFICE_VALUE := onlyoffice
@@ -505,15 +505,13 @@ else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
 endif
 
-ifneq ($(PLUGIN_MANAGER_FILE),)
-%.sh : %.sh.m4
+common/documentserver/bin/% : common/documentserver/bin/%.m4
 	m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
 	chmod u+x $@
-else ifeq ($(strip $(PLUGIN_MANAGER_FILE)),)
-%.sh : %.sh.m4
+
+rpm/bin/% : rpm/bin/%.m4
 	m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
 	chmod u+x $@
-endif
 
 % : %.m4
 	m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@

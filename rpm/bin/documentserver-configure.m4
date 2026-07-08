@@ -153,7 +153,7 @@ while [ "$1" != "" ]; do
 		;;
 
 		-? | -h | --help )
-			echo "  Usage: bash documentserver-configure.sh [PARAMETER] [[PARAMETER], ...]"
+			echo "  Usage: documentserver-configure [PARAMETER] [[PARAMETER], ...]"
 			echo
 			echo "    Parameters:"
 			echo "      -p, --dsport                 The value by that incoming connections are listened                             ( Defaults to 8083 )"
@@ -198,7 +198,7 @@ DS_PORT=${DS_PORT:-8083}
 # EXAMPLE_PORT=${EXAMPLE_PORT:-3000}
 
 if [ -z $JWT_SECRET ] && [ -z $JWT_ENABLED ]; then
-	JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status.sh' to get information about JWT."
+	JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status' to get information about JWT."
 fi
 
 JWT_ENABLED=${JWT_ENABLED:-true}
@@ -507,7 +507,7 @@ setup_nginx(){
 
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
     echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
-    echo "  To reconfigure, run: documentserver-configure.sh --dsport <PORT>" >&2
+    echo "  To reconfigure, run: documentserver-configure --dsport <PORT>" >&2
     return 0
   fi
 
@@ -595,7 +595,7 @@ tune_local_configs
 setup_nginx
 
 # generate secure link
-documentserver-update-securelink.sh -r false
+documentserver-update-securelink -r false
 
 restart_services
 

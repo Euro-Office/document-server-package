@@ -39,9 +39,8 @@ cp -r $DOCUMENTSERVER_HOME/* "$HOME_DIR/"
 
 #install documentserver bin
 mkdir -p "$BIN_DIR/"
-cp -r $DOCUMENTSERVER_BIN/*.sh "$BIN_DIR/"
-cp -r %{_builddir}/../../bin/*.sh "$BIN_DIR/"
-%{?is_commercial:%__ln_s documentserver-admin.sh "$BIN_DIR/documentserver-admin"}
+find "$DOCUMENTSERVER_BIN" -maxdepth 1 -type f ! -name '*.*' -exec cp -r -t "$BIN_DIR/" {} +
+cp -r %{_builddir}/../../bin/documentserver-configure "$BIN_DIR/"
 
 #install configs
 mkdir -p "$CONF_DIR/"
@@ -180,8 +179,7 @@ rm -rf "%{buildroot}"
 %config %attr(644, root, root) %{_sysconfdir}/%{_ds_prefix}/logrotate/*
 
 %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/*.so*
-%attr(744, root, root) %{_bindir}/documentserver-*.sh
-%{?is_commercial:%attr(-, root, root) %{_bindir}/documentserver-admin}
+%attr(744, root, root) %{_bindir}/documentserver-*
 %attr(-, root, root) %{_sysconfdir}/logrotate.d/*
 %attr(-, root, root) %{_sysconfdir}/nginx/%{nginx_conf_d}/*
 %attr(-, root, root) %{_sysconfdir}/nginx/includes/*
@@ -216,7 +214,7 @@ case "$1" in
   2)
     # Upgrade
     # disconnect all users and stop running services
-    documentserver-prepare4shutdown.sh || true
+    documentserver-prepare4shutdown || documentserver-prepare4shutdown.sh || true
 
     echo "Stopping documentserver services..."
     for SVC in %{package_services}; do
@@ -340,7 +338,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
   else
     echo ""
     echo "Update of %{_package_name} ended with a problem"
-    echo "You should reconfigure the package using script \"/usr/bin/documentserver-configure.sh\""
+    echo "You should reconfigure the package using script \"/usr/bin/documentserver-configure\""
     echo ""
   fi
 %endif
@@ -350,8 +348,8 @@ fi
 # generate allfonts.js, thumbnail and cache_tag
 rpm_version=$(rpm -q --qf '%%{version}' rpm | awk -F. '{ printf("%%d%%03d%%03d%%03d", $1,$2,$3,$4); }';)
 if [[ "$rpm_version" -lt "4013001000" ]]; then
-  documentserver-generate-allfonts.sh true
-  documentserver-flush-cache.sh -r false
+  documentserver-generate-allfonts true
+  documentserver-flush-cache -r false
 fi
 
 if [ "%{DS_PLUGIN_INSTALLATION}" = "true" ]; then
@@ -362,7 +360,7 @@ if [ "%{DS_PLUGIN_INSTALLATION}" = "true" ]; then
 
   # install/update plugins
   echo -n Installing plugins, please wait...
-  documentserver-pluginsmanager.sh -r false --ignore=\"${IGNORED_PLUGINS_LIST[@]}\" --update=\"${DIR}/sdkjs-plugins/plugin-list-default.json\" >/dev/null
+  documentserver-pluginsmanager -r false --ignore=\"${IGNORED_PLUGINS_LIST[@]}\" --update=\"${DIR}/sdkjs-plugins/plugin-list-default.json\" >/dev/null
   echo Done
 fi
 
@@ -415,19 +413,19 @@ fi
 echo "$JWT_MESSAGE"
 
 %transfiletriggerin -- /usr/share/fonts /usr/share/ghostscript/fonts /usr/share/texmf/fonts
-%{_bindir}/documentserver-generate-allfonts.sh true
-%{_bindir}/documentserver-flush-cache.sh
+%{_bindir}/documentserver-generate-allfonts true
+%{_bindir}/documentserver-flush-cache
 
 %transfiletriggerun -- /usr/share/fonts /usr/share/ghostscript/fonts /usr/share/texmf/fonts
-%{_bindir}/documentserver-generate-allfonts.sh true
-%{_bindir}/documentserver-flush-cache.sh
+%{_bindir}/documentserver-generate-allfonts true
+%{_bindir}/documentserver-flush-cache
 
 %preun
 case "$1" in
   0)
     # Uninstall
     # disconnect all users and stop running services
-    documentserver-prepare4shutdown.sh
+    documentserver-prepare4shutdown
     for SVC in %{package_services} ds-metrics ds-example; do
       if [ -e /usr/lib/systemd/system/$SVC.service ]; then
         systemctl stop $SVC

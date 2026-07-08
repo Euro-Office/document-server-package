@@ -81,7 +81,7 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`
 	JWT_HEADER="$RET"
 
 	if [ $JWT_ENABLED = "true" ] && [ -z $JWT_SECRET ]; then
-		JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status.sh' to get information about JWT."
+		JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status' to get information about JWT."
 		JWT_SECRET=$(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c 32)
 		db_set M4_ONLYOFFICE_VALUE/jwt-secret $JWT_SECRET || true
 	elif [ $JWT_ENABLED = "false" ]; then
@@ -258,7 +258,7 @@ setup_nginx(){
 	  cp -f ${DS_CONF}.tmpl ${DS_CONF}
 	  
 	  # generate secure link
-	  [ -z "$DS_DOCKER_INSTALLATION" ] && documentserver-update-securelink.sh -s $(tr -dc A-Za-z0-9 </dev/urandom | head -c 20) -r false
+	  [ -z "$DS_DOCKER_INSTALLATION" ] && documentserver-update-securelink -s $(tr -dc A-Za-z0-9 </dev/urandom | head -c 20) -r false
   elif ! grep -q secure_link_secret $DS_CONF; then
 	  sed '/server_tokens/a \ \ set $secure_link_secret verysecretstring;' -i $DS_CONF
   fi
@@ -375,14 +375,14 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 
 		# generate allfonts.js, thumbnail and cache_tag
 		if [ -z "$DS_DOCKER_INSTALLATION" ]; then
-			documentserver-generate-allfonts.sh true
-			documentserver-flush-cache.sh -r false
+			documentserver-generate-allfonts true
+			documentserver-flush-cache -r false
 		fi
 
 		# install/update plugins
 		if [ "$DS_PLUGIN_INSTALLATION" = "true" ]; then
 			echo -n Installing plugins, please wait...
-			documentserver-pluginsmanager.sh -r false --update=\"$DIR/sdkjs-plugins/plugin-list-default.json\" >/dev/null
+			documentserver-pluginsmanager -r false --update=\"$DIR/sdkjs-plugins/plugin-list-default.json\" >/dev/null
 			echo Done
 		fi
 
@@ -430,8 +430,8 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 	;;
 	
 	triggered)
-		documentserver-generate-allfonts.sh true
-		documentserver-flush-cache.sh
+		documentserver-generate-allfonts true
+		documentserver-flush-cache
 	;;
 	
 	*)

@@ -80,5 +80,5 @@ if [ "$ONLYOFFICE_DATA_CONTAINER" != "true" ]; then
     supervisorctl restart ds:docservice
     supervisorctl restart ds:converter
   fi
-  documentserver-flush-cache.sh
+  documentserver-flush-cache
 fi

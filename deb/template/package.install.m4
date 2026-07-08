@@ -1,4 +1,13 @@
-../../common/documentserver/bin/*.sh usr/bin
+../../common/documentserver/bin/documentserver-example usr/bin
+../../common/documentserver/bin/documentserver-flush-cache usr/bin
+../../common/documentserver/bin/documentserver-generate-allfonts usr/bin
+../../common/documentserver/bin/documentserver-jwt-status usr/bin
+../../common/documentserver/bin/documentserver-letsencrypt usr/bin
+../../common/documentserver/bin/documentserver-prepare4shutdown usr/bin
+../../common/documentserver/bin/documentserver-static-gzip usr/bin
+../../common/documentserver/bin/documentserver-update-securelink usr/bin
+ifelse('M4_DS_PLUGIN_INSTALLATION','true', ../../common/documentserver/bin/documentserver-pluginsmanager usr/bin,)
+ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1, ../../common/documentserver/bin/documentserver-admin usr/bin,)
 ../../common/documentserver/config/* etc/M4_DS_PREFIX
 ../../common/documentserver/home/* var/www/M4_DS_PREFIX
 ../../common/documentserver/nginx/*.tmpl etc/M4_DS_PREFIX/nginx

@@ -19,7 +19,7 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        documentserver-prepare4shutdown.sh || true
+        documentserver-prepare4shutdown || true
         echo "Stopping documentserver services..."
         for SVC in M4_PACKAGE_SERVICES; do
             if [ -e /usr/lib/systemd/system/$SVC.service ]; then
