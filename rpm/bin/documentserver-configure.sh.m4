@@ -501,6 +501,9 @@ setup_nginx(){
   DS_CONF_TMPL=$NGINX_CONF_DIR/ds.conf.tmpl
   DS_CONF=$NGINX_CONF_DIR/ds.conf
 
+  # pre-declare cache_tag; flush-cache.sh sets the real value later
+  [ -e /etc/nginx/includes/ds-cache.conf ] || echo 'set $cache_tag "";' > /etc/nginx/includes/ds-cache.conf
+
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
     echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
     echo "  To reconfigure, run: documentserver-configure.sh --dsport <PORT>" >&2
@@ -541,8 +544,9 @@ setup_nginx(){
   done
 
   # validate the generated nginx configuration before it is applied
-  if ! nginx -t >/dev/null 2>&1; then
-    echo "Error: nginx configuration test failed. Run 'nginx -t' for details." >&2
+  if ! NGINX_TEST_OUTPUT=$(nginx -t 2>&1); then
+    echo "Error: nginx configuration test failed:" >&2
+    echo "$NGINX_TEST_OUTPUT" >&2
   fi
 
   systemctl enable nginx

@@ -249,7 +249,10 @@ save_jwt_params(){
 
 setup_nginx(){
    DS_CONF=$CONF_DIR/nginx/ds.conf
-  
+
+  # pre-declare cache_tag; flush-cache.sh sets the real value later
+  [ -e /etc/nginx/includes/ds-cache.conf ] || echo 'set $cache_tag "";' > /etc/nginx/includes/ds-cache.conf
+
   if [ ! -e $DS_CONF ]; then
 	  cp -f ${DS_CONF}.tmpl ${DS_CONF}
 	  
@@ -290,8 +293,9 @@ setup_nginx(){
   fi
 
   # validate the generated nginx configuration before it is applied
-  if ! nginx -t >/dev/null 2>&1; then
-    echo "Error: nginx configuration test failed. Run 'nginx -t' for details." >&2
+  if ! NGINX_TEST_OUTPUT=$(nginx -t 2>&1); then
+    echo "Error: nginx configuration test failed:" >&2
+    echo "$NGINX_TEST_OUTPUT" >&2
   fi
 
   # sed 's/{{DOCSERVICE_PORT}}/'${DOCSERVICE_PORT}'/'  -i $OO_CONF
