@@ -54,7 +54,6 @@ else
 endif
 
 DOCUMENTSERVER = common/documentserver/home
-DOCUMENTSERVER_BIN = common/documentserver/bin
 DOCUMENTSERVER_CONFIG = common/documentserver/config
 DOCUMENTSERVER_FILES += $(DOCUMENTSERVER)/core-fonts
 DOCUMENTSERVER_FILES += $(DOCUMENTSERVER)/license
@@ -95,11 +94,6 @@ REDIS := $(EXE_BUILD_DIR)/redist/Redis-7.4.0-Windows-x64.msi
 WINACME := $(EXE_BUILD_DIR)/redist/Win-acme-2.2.9.1701.msi
 VC2013 := $(EXE_BUILD_DIR)/redist/vcredist2013_x64.exe
 VC2022 := $(EXE_BUILD_DIR)/redist/vcredist2022_x64.exe
-
-BUILD_DATE := $(shell date +%F-%H-%M)
-
-WEBAPPS_DIR := web-apps
-SDKJS_DIR :=sdkjs
 
 ifeq ($(PRODUCT_NAME_LOW),$(filter $(PRODUCT_NAME_LOW),documentserver))
 OFFICIAL_PRODUCT_NAME := 'Community Edition'
@@ -329,7 +323,7 @@ RPM_PARAMS += --define '_ds_prefix $(DS_PREFIX)'
 RPM_PARAMS += --define '_binary_payload $(RPMBUILD_BINARY_PAYLOAD)'
 RPM_PARAMS += --define "__strip /bin/true"
 
-.PHONY: all clean clean-docker rpm deb exe exe-pr packages deploy-bin
+.PHONY: all clean rpm deb exe exe-pr packages deploy-bin
 
 all: rpm deb
 
