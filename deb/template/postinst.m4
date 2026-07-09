@@ -36,6 +36,7 @@ CLUSTER_MODE=""
 create_local_configs(){
 	for i in $LOCAL_CONFIG $EXAMPLE_CONFIG; do
 		if [ -d $(dirname ${i}) -a ! -f ${i} ]; then
+			install -m 600 -D /dev/null ${i}
 			echo {} > ${i}
 		fi
   	done
@@ -363,6 +364,7 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
 		chown ds:ds "$CONF_DIR"/*.json
+		chmod u=rw,go= "$CONF_DIR"/*.json
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
