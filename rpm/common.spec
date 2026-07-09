@@ -41,6 +41,10 @@ cp -r $DOCUMENTSERVER_HOME/* "$HOME_DIR/"
 mkdir -p "$BIN_DIR/"
 find "$DOCUMENTSERVER_BIN" -maxdepth 1 -type f ! -name '*.*' -exec cp -r -t "$BIN_DIR/" {} +
 cp -r %{_builddir}/../../bin/documentserver-configure "$BIN_DIR/"
+# Temporary compatibility aliases for legacy .sh command names
+for bin in "$BIN_DIR"/documentserver-*; do
+  [ -f "$bin" ] && ln -s "$(basename "$bin")" "$bin.sh"
+done
 
 #install configs
 mkdir -p "$CONF_DIR/"
