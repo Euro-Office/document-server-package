@@ -13,7 +13,7 @@ dnl -- system
   libstdc++6 (>= 10),
   ca-certificates,
 dnl -- web server
-  nginx-extras | nginx (>= 1.18),
+  nginx (>= 1.22) | nginx-extras (>= 1.18),
 dnl -- tools
   xxd,
   curl,
