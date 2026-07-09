@@ -194,8 +194,6 @@ AMQP_SERVER_TYPE=${AMQP_SERVER_TYPE:-rabbitmq}
 
 DB_TYPE=${DB_TYPE:-postgres}
 DS_PORT=${DS_PORT:-8083}
-# DOCSERVICE_PORT=${DOCSERVICE_PORT:-8000}
-# EXAMPLE_PORT=${EXAMPLE_PORT:-3000}
 
 if [ -z $JWT_SECRET ] && [ -z $JWT_ENABLED ]; then
 	JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status' to get information about JWT."
@@ -518,9 +516,6 @@ setup_nginx(){
   if [ ! -f /proc/net/if_inet6 ]; then
     sed '/listen\s\+\[::[0-9]*\].\+/d' -i $DS_CONF
   fi
-
-  # sed 's/{{DOCSERVICE_PORT}}/'${DOCSERVICE_PORT}'/' -i $OO_CONF
-  # sed 's/{{EXAMPLE_PORT}}/'${EXAMPLE_PORT}'/' -i $OO_CONF
 
   # check whethere enabled
   shopt -s nocasematch

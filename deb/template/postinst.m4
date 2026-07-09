@@ -266,12 +266,6 @@ setup_nginx(){
   db_get M4_ONLYOFFICE_VALUE/ds-port || true
   DS_PORT="$RET"
   
-  # db_get M4_ONLYOFFICE_VALUE/docservice-port || true
-  # DOCSERVICE_PORT="$RET"
-  
-  # db_get M4_ONLYOFFICE_VALUE/example-port || true
-  # EXAMPLE_PORT="$RET"
-  
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
     echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
     echo "  To reconfigure, run:" >&2
@@ -298,9 +292,6 @@ setup_nginx(){
     echo "Error: nginx configuration test failed:" >&2
     echo "$NGINX_TEST_OUTPUT" >&2
   fi
-
-  # sed 's/{{DOCSERVICE_PORT}}/'${DOCSERVICE_PORT}'/'  -i $OO_CONF
-  # sed 's/{{EXAMPLE_PORT}}/'${EXAMPLE_PORT}'/'  -i $OO_CONF
 }
 
 save_wopi_params() {
