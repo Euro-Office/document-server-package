@@ -253,7 +253,6 @@ LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.m4))
 
 ifneq ($(COMPANY_NAME_LOW),onlyoffice)
 LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanager,$(LINUX_DEPS))
-PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.m4)
 endif
 
 # CE has no AdminPanel, so the host-side CLI wrapper is excluded from CE builds.
