@@ -356,6 +356,10 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,`mkdir -p "$LOG_DIR/adminpan
 		chmod a-w -R "$DIR"*
 		chown ds:ds "$CONF_DIR"/*.json
 		chmod u=rw,go= "$CONF_DIR"/*.json
+ifelse('M4_DS_EXAMPLE_ENABLE', '1',
+`		chown ds:ds "$CONF_DIR-example"/*.json
+		chmod u=rw,go= "$CONF_DIR-example"/*.json
+')dnl
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
 		mkdir -p "$DIR/../Data" && chown -R "$DATA_OWNER" "$DIR/../Data" && chmod g+rwxs "$DIR/../Data"
