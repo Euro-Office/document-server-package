@@ -9,7 +9,7 @@ GNU Make, M4 macro processor, Bash, Inno Setup (Windows), dpkg/rpmbuild, systemd
 ## Project Structure
 
 ```
-Makefile            — Main build system (602 lines)
+Makefile            — Main build system
 variables.m4        — M4 build variable definitions
 common/documentserver/
   bin/              — Shell/batch/PS1 scripts (M4 templates)
@@ -49,7 +49,7 @@ make clean
 
 - M4 macro processor generates platform-specific files from `.m4` templates
 - Expects binaries in `../build_tools/out/` — does NOT contain DocumentServer source code
-- Four editions: Community, Enterprise (-EE), Integration (-IE), Developer (-DE)
+- Three editions: Community, Enterprise (-EE), Developer (-DE)
 - Multi-arch: x86_64, aarch64
 - Windows installer uses Inno Setup with InnoDependencyInstaller submodule
 - systemd services: ds-converter, ds-docservice, ds-metrics, ds-adminpanel
