@@ -288,6 +288,7 @@ setup_nginx(){
   fi
 
   # validate the generated nginx configuration before it is applied
+  mkdir -p "$LOG_DIR"
   if ! NGINX_TEST_OUTPUT=$(nginx -t 2>&1); then
     echo "Error: nginx configuration test failed:" >&2
     echo "$NGINX_TEST_OUTPUT" >&2
