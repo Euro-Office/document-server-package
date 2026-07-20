@@ -296,12 +296,13 @@ if [ "$IS_UPGRADE" = "true" ]; then
     case $DB_TYPE in
       postgres)
         echo -n "Trying to establish PostgreSQL connection... "
-        command -v psql >/dev/null 2>&1 || { echo "PostgreSQL client not found"; exit 1; }
+        PSQL=$(command -v psql 2>/dev/null || ls -1 /usr/pgsql-*/bin/psql 2>/dev/null | sort -V | tail -n 1)
+        [ -x "$PSQL" ] || { echo "PostgreSQL client not found"; exit 1; }
         CONNECTION_PARAMS="-h$DB_HOST -U$DB_USER -w"
         if [ -n "$DB_PWD" ]; then
           export PGPASSWORD=$DB_PWD
         fi
-        PSQL="psql -q $CONNECTION_PARAMS"
+        PSQL="$PSQL -q $CONNECTION_PARAMS"
         $PSQL -c ";" >/dev/null 2>&1 || { echo "FAILURE"; exit 1; }
         echo "OK"
 

@@ -403,13 +403,14 @@ execute_postgres_scripts(){
 establish_postgres_conn() {
 	echo -n "Trying to establish PostgreSQL connection... "
 
-	command -v psql >/dev/null 2>&1 || { echo "PostgreSQL client not found"; exit 1; }
+	PSQL=$(command -v psql 2>/dev/null || ls -1 /usr/pgsql-*/bin/psql 2>/dev/null | sort -V | tail -n 1)
+	[ -x "$PSQL" ] || { echo "PostgreSQL client not found"; exit 1; }
 
         if [ -n "$DB_PWD" ]; then
                 export PGPASSWORD=$DB_PWD
         fi
 
-	PSQL="psql -q -h$DB_HOST -p${DB_PORT:="5432"} -d$DB_NAME -U$DB_USER -w"
+	PSQL="$PSQL -q -h$DB_HOST -p${DB_PORT:="5432"} -d$DB_NAME -U$DB_USER -w"
 	$PSQL -c ";" >/dev/null 2>&1 || { echo "FAILURE"; exit 1; }
 
 	echo "OK"
