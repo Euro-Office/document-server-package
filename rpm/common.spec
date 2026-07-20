@@ -319,7 +319,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
         echo "OK"
         ;;
 
-      mysql)
+      mysql|mariadb)
         echo -n "Trying to database MySQL connection... "
         command -v mysql >/dev/null 2>&1 || { echo "MySQL client not found"; exit 1; }
         MYSQL="mysql -h$DB_HOST -u$DB_USER"
@@ -336,7 +336,7 @@ if [ "$IS_UPGRADE" = "true" ]; then
         ;;
 
       *)
-        echo "Incorrect DB_TYPE value! Possible value of DB_TYPE is 'postgres' or 'mysql'."
+        echo "Incorrect DB_TYPE value! Possible value of DB_TYPE is 'postgres', 'mysql' or 'mariadb'."
         exit 1
     esac
   else

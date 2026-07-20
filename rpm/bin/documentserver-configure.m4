@@ -444,12 +444,12 @@ execute_db_script(){
 			establish_postgres_conn || exit $?
 			execute_postgres_scripts || exit $?
 			;;	
-		mysql) 
+		mysql|mariadb)
 			establish_mysql_conn || exit $?
 			execute_mysql_sqript || exit $?
 			;;   
 		*)
-			echo "Incorrect DB_TYPE value! Possible value of DB_TYPE is 'postgres' or 'mysql'."
+			echo "Incorrect DB_TYPE value! Possible value of DB_TYPE is 'postgres', 'mysql' or 'mariadb'."
 			exit 1	  
 	esac
 }
