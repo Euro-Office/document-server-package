@@ -165,7 +165,7 @@ else
 	endif
 	ifeq ($(UNAME_M),x86_64)
 		ARCHITECTURE := 64
-		PKG_TARGET ?= node18-linux-x64
+		PKG_TARGET ?= node18-linuxstatic-x64
 	endif
 	ifneq ($(filter %86,$(UNAME_M)),)
 		ARCHITECTURE := 32
