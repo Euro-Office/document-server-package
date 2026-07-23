@@ -205,6 +205,13 @@ rm -rf "%{buildroot}"
 %endif
 
 %pre
+%if %{defined is_commercial}
+if ! command -v psql >/dev/null 2>&1 && ! command -v mysql >/dev/null 2>&1 && ! ls /usr/pgsql-*/bin/psql >/dev/null 2>&1; then
+  echo "Error: install PostgreSQL or MySQL/MariaDB client before installing %{name}." >&2
+  exit 1
+fi
+%endif
+
 # add group and user for onlyoffice app
 getent group ds >/dev/null || groupadd -r ds
 getent passwd ds >/dev/null || useradd -r -g ds -d %{_localstatedir}/www/%{_ds_prefix}/ -s /sbin/nologin ds

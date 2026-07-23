@@ -1,7 +1,7 @@
 # -- system
 Requires: libselinux-utils
 Requires: ca-certificates
-Requires: libstdc++ >= 8
+Requires: libstdc++ >= 4.8.4
 # -- web server
 Requires: nginx >= 1.18
 # -- tools
@@ -15,4 +15,4 @@ Requires: iproute
 Requires: liberation-mono-fonts
 Requires: msttcore-fonts-installer
 # -- enterprise/developer editions only
-ifelse(regexp(M4_PACKAGE_NAME, `documentserver$'),-1,`Requires: certbot, (postgresql >= 12 or /usr/bin/psql or /usr/bin/mysql)',)
+ifelse(regexp(M4_PACKAGE_NAME, `documentserver$'),-1,`Requires: certbot',)
