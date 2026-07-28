@@ -1,5 +1,6 @@
 # -- system
 Requires: libselinux-utils
+Requires: /usr/sbin/semanage
 Requires: ca-certificates
 Requires: libstdc++ >= 4.8.4
 # -- web server
