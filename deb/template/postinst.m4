@@ -269,7 +269,7 @@ setup_nginx(){
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
     echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
     echo "  To reconfigure, run:" >&2
-    echo "    echo 'M4_ONLYOFFICE_VALUE/ds-port string <PORT>' | debconf-set-selections" >&2
+    echo "    echo 'M4_PACKAGE_NAME M4_ONLYOFFICE_VALUE/ds-port string <PORT>' | debconf-set-selections" >&2
     echo "    dpkg-reconfigure -f noninteractive M4_PACKAGE_NAME" >&2
     return 0
   fi
