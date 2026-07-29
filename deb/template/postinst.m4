@@ -267,11 +267,28 @@ setup_nginx(){
   DS_PORT="$RET"
   
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
-    echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
+    PORT_ERROR=false
+
+    if [ "${DS_PORT}" = "8083" ]; then
+      PORT_ERROR=true
+      echo "Error: port ${DS_PORT} is already in use. Nginx configuration skipped." >&2
+    else
+      REQUESTED_PORT="$DS_PORT" DS_PORT=8083
+
+      if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+        PORT_ERROR=true
+        echo "Error: port ${REQUESTED_PORT} is already in use, and so is the fallback port ${DS_PORT}. Nginx configuration skipped." >&2
+      else
+        db_set M4_ONLYOFFICE_VALUE/ds-port "${DS_PORT}" || true
+        echo "Warning: port ${REQUESTED_PORT} is already in use, falling back to port ${DS_PORT}." >&2
+      fi
+    fi
+
     echo "  To reconfigure, run:" >&2
     echo "    echo 'M4_PACKAGE_NAME M4_ONLYOFFICE_VALUE/ds-port string <PORT>' | debconf-set-selections" >&2
     echo "    dpkg-reconfigure -f noninteractive M4_PACKAGE_NAME" >&2
-    return 0
+
+    [ "${PORT_ERROR}" = true ] && return 0
   fi
 
   # setup ds port

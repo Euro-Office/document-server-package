@@ -505,9 +505,25 @@ setup_nginx(){
   [ -e /etc/nginx/includes/ds-cache.conf ] || echo 'set $cache_tag "";' > /etc/nginx/includes/ds-cache.conf
 
   if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
-    echo "Error: port $DS_PORT is already in use. Nginx configuration skipped." >&2
+    PORT_ERROR=false
+
+    if [ "${DS_PORT}" = "8083" ]; then
+      PORT_ERROR=true
+      echo "Error: port ${DS_PORT} is already in use. Nginx configuration skipped." >&2
+    else
+      REQUESTED_PORT="$DS_PORT" DS_PORT=8083
+
+      if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+        PORT_ERROR=true
+        echo "Error: port ${REQUESTED_PORT} is already in use, and so is the fallback port ${DS_PORT}. Nginx configuration skipped." >&2
+      else
+        echo "Warning: port ${REQUESTED_PORT} is already in use, falling back to port ${DS_PORT}." >&2
+      fi
+    fi
+
     echo "  To reconfigure, run: documentserver-configure --dsport <PORT>" >&2
-    return 0
+
+    [ "${PORT_ERROR}" = true ] && return 0
   fi
 
   cp -f ${DS_CONF_TMPL} ${DS_CONF}
