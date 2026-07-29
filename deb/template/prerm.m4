@@ -27,7 +27,7 @@ case "$1" in
             fi
         done
         
-        unlink /etc/nginx/conf.d/ds.conf
+        rm -f /etc/nginx/conf.d/ds.conf
     ;;
 
     failed-upgrade)
