@@ -81,4 +81,5 @@ if [ "$ONLYOFFICE_DATA_CONTAINER" != "true" ]; then
     supervisorctl restart ds:converter
   fi
   documentserver-flush-cache
+  documentserver-static-gzip
 fi
