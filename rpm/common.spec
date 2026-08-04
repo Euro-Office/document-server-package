@@ -96,6 +96,10 @@ DS_LOGROTATE_CONF=$CONF_DIR/logrotate/
 mkdir -p "$DS_LOGROTATE_CONF"
 cp -r %{_builddir}/../../../common/documentserver/logrotate/*.conf "$DS_LOGROTATE_CONF"
 
+#install fontconfig config for custom fonts
+mkdir -p "%{buildroot}%{_sysconfdir}/fonts/conf.d"
+cp %{_builddir}/../../../common/documentserver/fontconfig/documentserver-fonts.conf "%{buildroot}%{_sysconfdir}/fonts/conf.d/"
+
 %if %{defined example}
 #install documentserver example files
 mkdir -p "${HOME_DIR}-example/"
@@ -181,6 +185,8 @@ rm -rf "%{buildroot}"
 %config(noreplace) %{_sysconfdir}/%{_ds_prefix}/nginx/ds.conf
 
 %config %attr(644, root, root) %{_sysconfdir}/%{_ds_prefix}/logrotate/*
+
+%config %attr(644, root, root) %{_sysconfdir}/fonts/conf.d/documentserver-fonts.conf
 
 %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/*.so*
 %attr(744, root, root) %{_bindir}/documentserver-*

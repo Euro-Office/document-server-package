@@ -13,6 +13,9 @@ DIR="/var/www/M4_DS_PREFIX"
 
 export LD_LIBRARY_PATH=/var/www/M4_DS_PREFIX/server/FileConverter/bin:$LD_LIBRARY_PATH
 
+# DS 9.5.0: registered as fontconfig source dir (documentserver-fonts.conf.m4, Bug 82565)
+command -v fc-cache >/dev/null 2>&1 && fc-cache -f "$DIR/../Data/custom-fonts" >/dev/null 2>&1
+
 #Start generate AllFonts.js, font thumbnails and font_selection.bin
 echo -n Generating AllFonts.js, please wait...
 
