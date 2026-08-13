@@ -29,8 +29,6 @@ JSON_BIN="$DIR/npm/json"
 JSON="$JSON_BIN -I -q -f $LOCAL_CONFIG"
 JSON_EXAMPLE="$JSON_BIN -I -q -f ${EXAMPLE_CONFIG}"
 
-OLD_VERSION="$2"
-
 CLUSTER_MODE=""
 
 create_local_configs(){

@@ -28,6 +28,5 @@ ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,
   certbot,
   redis-tools,'
 ,)dnl
-Recommends:
 Description: defn(`DEB[Summary]')
 defn(`DEB[Description]')
