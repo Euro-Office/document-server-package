@@ -392,8 +392,8 @@ endif
 
 ifeq ($(PLATFORM),win)
 	cp -fr -t $(DOCUMENTSERVER)/license exe/license/*.license
-	echo ; >> $(DOCUMENTSERVER)/3rd-Party.txt
-	cat exe/license/3rd-Party.txt ; >> $(DOCUMENTSERVER)/3rd-Party.txt
+	echo >> $(DOCUMENTSERVER)/3rd-Party.txt
+	cat exe/license/3rd-Party.txt >> $(DOCUMENTSERVER)/3rd-Party.txt
 endif
 	cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE)
 	chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/x2t$(EXEC_EXT)
