@@ -30,7 +30,6 @@ BIN_DIR=%{buildroot}%{_bindir}
 DATA_DIR=%{buildroot}%{_localstatedir}/lib/%{_ds_prefix}
 CONF_DIR=%{buildroot}%{_sysconfdir}/%{_ds_prefix}
 HOME_DIR=%{buildroot}%{_localstatedir}/www/%{_ds_prefix}
-LIB_DIR=%{buildroot}%{_libdir}
 LOG_DIR=%{buildroot}%{_localstatedir}/log/%{_ds_prefix}
 
 #install documentserver files
@@ -467,7 +466,6 @@ case "$1" in
     # Uninstall
     rm -f $DIR/sdkjs/common/AllFonts.js
     rm -f $DIR/sdkjs/common/Images/fonts_thumbnail*
-    rm -f $DIR/sdkjs/*/sdk-all.cache
     rm -f $DIR/server/FileConverter/bin/font_selection.bin
     rm -f $DIR/server/FileConverter/bin/AllFonts.js
     rm -f $DIR/fonts/*
