@@ -72,8 +72,6 @@ HTMLFILEINTERNAL = $(DOCUMENTSERVER)/server/FileConverter/bin/HtmlFileInternal/H
 DOCUMENTSERVER_EXAMPLE = common/documentserver-example/home
 DOCUMENTSERVER_EXAMPLE_CONFIG = common/documentserver-example/config
 
-FONTS = common/fonts
-
 NGINX_VER := nginx-1.21.3
 NGINX_ZIP := $(NGINX_VER).zip
 NGINX := $(DOCUMENTSERVER)/nginx
@@ -115,8 +113,6 @@ endif
 ifeq ($(OS),Windows_NT)
 	PLATFORM := win
 	EXEC_EXT := .exe
-	SHELL_EXT := .bat
-	SHARED_EXT := .dll
 	ARCH_EXT := .zip
 	AR := 7z a -y
 	PACKAGES = exe
@@ -136,8 +132,6 @@ else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
 		PLATFORM := linux
-		SHARED_EXT := .so*
-		SHELL_EXT := .sh
 		ARCH_EXT := .zip
 		AR := 7z a -y
 		PACKAGES = deb rpm tar
@@ -151,13 +145,10 @@ else
 	endif
 	ifeq ($(UNAME_S),Darwin)
 		PLATFORM := mac
-		SHARED_EXT := .dylib
-		SHELL_EXT := .sh
 		ARCH_EXT := .zip
 		AR := 7z a -y
 		NGINX_CONF := /etc/nginx/
 		NGINX_LOG := /var/log/onlyoffice/documentserver/
-		NGINX_CASH := /var/cache/nginx/onlyoffice/documentserver/
 		DS_ROOT := /var/www/onlyoffice/documentserver/
 		DS_FILES := /var/lib/onlyoffice/documentserver/
 		DS_EXAMPLE := /var/www/onlyoffice/documentserver-example
@@ -356,7 +347,6 @@ clean:
 		$(DOCUMENTSERVER_FILES)\
 		$(DOCUMENTSERVER_EXAMPLE)\
 		$(DS_BIN)\
-		$(FONTS)\
 		$(COMMON_DEPS)\
 		$(LINUX_DEPS_CLEAN)\
 		documentserver\
