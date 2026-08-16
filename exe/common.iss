@@ -149,7 +149,7 @@ DefaultGroupName        ={#sCompanyName}
 WizardSizePercent         = 115
 UsePreviousAppDir         = yes
 DirExistsWarning          =no
-DefaultDirName            ={commonpf}\{#sAppPath}
+DefaultDirName            ={code:GetDefaultDirName}
 DisableProgramGroupPage   = yes
 DisableWelcomePage        = no
 DEPCompatible             = no
@@ -534,6 +534,29 @@ var
   WopiExponent: String;
   PluginsEnabled: String;
   IsDefaultDatabase: Boolean;
+  PreviousAppDir: String;
+
+procedure SavePreviousAppDir;
+var
+  UninstallSubKey: String;
+begin
+  UninstallSubKey := 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{#sAppId}_is1';
+
+  if not RegQueryStringValue(
+    HKLM64, UninstallSubKey, 'Inno Setup: App Path', PreviousAppDir) then
+  begin
+    RegQueryStringValue(
+      HKLM32, UninstallSubKey, 'Inno Setup: App Path', PreviousAppDir);
+  end;
+end;
+
+function GetDefaultDirName(Param: String): String;
+begin
+  if PreviousAppDir <> '' then
+    Result := PreviousAppDir
+  else
+    Result := ExpandConstant('{commonpf}\{#sAppPath}');
+end;
 
 procedure InitAmqpServerParams(Host, UserName, Password, Proto: String);
 begin
@@ -655,7 +678,7 @@ end;
 
 function InitializeSetup(): Boolean;
 begin
- 
+  SavePreviousAppDir();
   ExtractFiles();
   Init();
   
