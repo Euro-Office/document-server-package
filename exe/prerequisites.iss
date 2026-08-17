@@ -71,6 +71,12 @@ ru.Program=Компоненты программы
 en.Prerequisites=Install prerequisites
 ru.Prerequisites=Установить необходимое ПО
 
+en.InstallingPythonModules=Installing offline Python modules...
+ru.InstallingPythonModules=Установка офлайн-модулей Python...
+
+en.PythonModulesInstallFailed=Failed to install required Python modules 'pika' and 'redis' (pip return code %1).
+ru.PythonModulesInstallFailed=Не удалось установить необходимые модули Python 'pika' и 'redis' (pip вернул код %1).
+
 en.FullInstall=Full installation
 ru.FullInstall=Полная установка
 
@@ -92,6 +98,8 @@ Source: "redist\otp_win64_27.3.4.6.exe"; DestDir: "{tmp}"; Flags: noencryption d
 Source: "redist\rabbitmq-server-4.2.1.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\FireDaemon-OpenSSL-x64-3.3.0.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\python-3.11.3-amd64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
+Source: "redist\python-wheels\*.whl"; DestDir: "{tmp}"; Flags: dontcopy noencryption
+Source: "scripts\python-requirements.txt"; DestDir: "{tmp}"; Flags: dontcopy noencryption
 Source: "redist\vcredist2013_x64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 Source: "redist\vcredist2022_x64.exe"; DestDir: "{tmp}"; Flags: noencryption deleteafterinstall
 
@@ -113,6 +121,53 @@ Name: "Prerequisites\VC2013"; Description: "Visual C++ 2013 Update 5 Redistribut
 Name: "Prerequisites\VC2022"; Description: "Visual C++ 2015-2022 Redistributable"; Flags: checkablealone; Types: full; Check:not IsVC2015To2022Installed;
 
 [Code]
+function InitializeSetup(): Boolean;
+begin
+  ExtractTemporaryFiles('*.whl');
+  ExtractTemporaryFile('python-requirements.txt');
+  Result := True;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  PythonExe: String;
+  ResultCode: Integer;
+begin
+  if CurStep <> ssInstall then
+    Exit;
+
+  PythonExe := ExpandConstant('{sd}\Python\python.exe');
+  if not FileExists(PythonExe) then
+    Exit;
+
+  WizardForm.StatusLabel.Caption :=
+    ExpandConstant('{cm:InstallingPythonModules}');
+
+  ResultCode := -1;
+  if not Exec(
+    PythonExe,
+    '-X utf8 -m pip install --quiet --progress-bar off --no-index ' +
+      '--disable-pip-version-check --find-links="' +
+      ExpandConstant('{tmp}') + '" --requirement "' +
+      ExpandConstant('{tmp}\python-requirements.txt') + '"',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode) then
+    ResultCode := -1;
+
+  if ResultCode <> 0 then
+  begin
+    MsgBox(
+      FmtMessage(
+        ExpandConstant('{cm:PythonModulesInstallFailed}'),
+        ([IntToStr(ResultCode)])),
+      mbError,
+      MB_OK);
+    Abort;
+  end;
+end;
+
 function NextButtonClick(CurPageID: Integer): Boolean;
 begin
   Result := true;

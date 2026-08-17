@@ -273,8 +273,11 @@ ru.PackageConnection=Укажите параметры подключения к
 en.CheckConnection=Connection to %1 failed! %n%2 return code %3%nCheck the connection settings and try again.
 ru.CheckConnection=Соединение с %1 не удалось! %n%2 вернул код ошибки %3%nПроверьте настройки соединения и попробуйте снова.
 
-en.NotAvailable=%1 isn't installed or there's no Internet connection,
-ru.NotAvailable=%1 не установлен или отсутствует подключение к Интернету,
+en.NotAvailable=%1 isn't installed.%n
+ru.NotAvailable=%1 не установлен.%n
+
+en.PythonModuleInstallFailed=Failed to install required Python module '%1' (pip return code %2).%nInstall '%1' offline or grant access to PyPI.
+ru.PythonModuleInstallFailed=Не удалось установить необходимый модуль Python '%1' (pip вернул код %2).%nУстановите '%1' офлайн или разрешите доступ к PyPI.
 
 en.SkipValidation=%1 parameters validation will be skipped.
 ru.SkipValidation=будет пропущена проверка параметров %1
@@ -315,7 +318,7 @@ Source: nginx\nginx.conf;                           DestDir: {#NGINX_SRV_DIR}\co
 Source: ..\common\documentserver\nginx\includes\*.conf;  DestDir: {#NGINX_SRV_DIR}\conf\includes; Flags: ignoreversion recursesubdirs; Components: Program
 Source: ..\common\documentserver\nginx\*.tmpl;  DestDir: {#NGINX_SRV_DIR}\conf; Flags: ignoreversion recursesubdirs; Components: Program
 Source: ..\common\documentserver\nginx\ds.conf; DestDir: {#NGINX_SRV_DIR}\conf; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
-Source: scripts\connectionRabbit.py;            DestDir: "{app}"; Flags: ignoreversion; Components: Program
+Source: scripts\connection.py;                  DestDir: "{app}"; Flags: ignoreversion; Components: Program
 Source: winsw\WinSW-x64.exe;                    DestDir: "{app}\winsw"; Flags: ignoreversion; Components: Program
 Source: {#file "winsw\Converter.xml"};          DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "Converter.xml"
 Source: {#file "winsw\DocService.xml"};         DestDir: "{app}\winsw"; Flags: ignoreversion; DestName: "DocService.xml"
@@ -655,7 +658,7 @@ end;
 
 function ExtractFiles(): Boolean;
 begin
-  ExtractTemporaryFile('connectionRabbit.py');
+  ExtractTemporaryFile('connection.py');
   ExtractTemporaryFile('psql.exe');
   ExtractTemporaryFile('libintl-9.dll');
   ExtractTemporaryFile('libpq.dll');
@@ -666,14 +669,35 @@ begin
   Result := true;
 end;
 
-function InternetConnection(): Boolean;
+function EnsurePythonModule(ModuleName: String): Boolean;
 var
   ResultCode: Integer;
 begin
-  Result := False;
-  Exec('powershell.exe', '-Command "if ((Test-NetConnection -ComputerName www.onlyoffice.com -Port 80).TcpTestSucceeded) { exit 0 } else { exit 1 }"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-  if ResultCode = 0 then
-    Result := True;
+  Result := DirExists(
+    ExpandConstant('{sd}') + '\Python\Lib\site-packages\' + ModuleName);
+  if Result then
+    Exit;
+
+  ResultCode := -1;
+  if not Exec(
+    ExpandConstant('{#Pip}'),
+    'install ' + ModuleName,
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode) then
+    ResultCode := -1;
+
+  Result := ResultCode = 0;
+  if not Result then
+  begin
+    MsgBox(
+      FmtMessage(
+        ExpandConstant('{cm:PythonModuleInstallFailed}'),
+        ([ModuleName, IntToStr(ResultCode)])),
+      mbError,
+      MB_OK);
+  end;
 end;
 
 function InitializeSetup(): Boolean;
@@ -1266,7 +1290,7 @@ begin
     EwWaitUntilTerminated,
     ResultCode);
 
-  if (ResultCode <> 0) or not InternetConnection() then
+  if ResultCode <> 0 then
   begin
     if MsgBox(
       FmtMessage(ExpandConstant('{cm:NotAvailable}'), ['Python']) +
@@ -1282,27 +1306,22 @@ begin
     end;
   end;
 
-  if DirExists(ExpandConstant('{sd}') + '\Python\Lib\site-packages\pika') = false then
+  if not EnsurePythonModule('pika') then
   begin
-    Exec(
-    ExpandConstant('{sd}') + '\Python\scripts\pip.exe',
-    'install pika',
-    '',
-    SW_HIDE,
-    EwWaitUntilTerminated,
-    ResultCode);
+    Result := false;
+    Exit;
   end;
 
-  if FileExists(ExpandConstant('{tmp}\connectionRabbit.py')) = true then
+  if FileExists(ExpandConstant('{tmp}\connection.py')) = true then
   begin
     ShellExec(
       '',
       ExpandConstant('{#Python}'),
-      (ExpandConstant('{tmp}\connectionRabbit.py') + ' ' +
+      ('"' + ExpandConstant('{tmp}\connection.py') + '" rabbitmq ' +
       GetRabbitMqProto('') + ' ' +
       '"' + GetRabbitMqUser('') + '"' + ' ' +
-      GetRabbitMqPwd('') + ' ' +
-      GetRabbitMqHost('')),
+      '"' + GetRabbitMqPwd('') + '"' + ' ' +
+      '"' + GetRabbitMqHost('') + '"'),
       '',
       SW_HIDE,
       EwWaitUntilTerminated,
@@ -1345,7 +1364,7 @@ begin
     EwWaitUntilTerminated,
     ResultCode);
 
-  if (ResultCode <> 0) or not InternetConnection() then
+  if ResultCode <> 0 then
   begin
     if MsgBox(
       FmtMessage(ExpandConstant('{cm:NotAvailable}'), ['Python']) +
@@ -1361,24 +1380,33 @@ begin
     end;
   end;
 
-  if DirExists(ExpandConstant('{sd}') + '\Python\Lib\site-packages\iredis') = false then
+  if not EnsurePythonModule('redis') then
   begin
-    Exec(
-    ExpandConstant('{sd}') + '\Python\scripts\pip.exe',
-    'install iredis',
-    '',
-    SW_HIDE,
-    EwWaitUntilTerminated,
-    ResultCode);
+    Result := false;
+    Exit;
   end;
 
-  Exec(
-  ExpandConstant('{sd}') + '\Python\scripts\iredis.exe',
-  '-h ' + GetRedisHost('') + ' quit',
-  '',
-  SW_HIDE,
-  EwWaitUntilTerminated,
-  ResultCode);
+  if FileExists(ExpandConstant('{tmp}\connection.py')) = true then
+  begin
+    ShellExec(
+      '',
+      ExpandConstant('{#Python}'),
+      '"' + ExpandConstant('{tmp}\connection.py') + '" redis "' +
+        GetRedisHost('') + '"',
+      '',
+      SW_HIDE,
+      EwWaitUntilTerminated,
+      ResultCode);
+  end
+  else
+  begin
+    MsgBox(
+      ExpandConstant('{cm:CheckFailed}') + ' ' +
+      FmtMessage(ExpandConstant('{cm:SkipValidation}'), ['{#Redis}']),
+      mbInformation,
+      MB_OK);
+    Exit;
+  end;
 
   if ResultCode <> 0 then
   begin

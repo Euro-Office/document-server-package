@@ -84,6 +84,10 @@ PSQL_ZIP := postgresql-18.0-1-windows-x64-binaries.zip
 WINSW := $(EXE_BUILD_DIR)/winsw/WinSW-x64.exe
 
 PYTHON := $(EXE_BUILD_DIR)/redist/python-3.11.3-amd64.exe
+PYTHON_REQUIREMENTS := $(EXE_BUILD_DIR)/scripts/python-requirements.txt
+PYTHON_WHEELS_DIR := $(EXE_BUILD_DIR)/redist/python-wheels
+PYTHON_WHEELS_STAMP := $(PYTHON_WHEELS_DIR)/.downloaded
+PIP_DOWNLOAD ?= python3 -m pip download
 OPENSSL := $(EXE_BUILD_DIR)/redist/FireDaemon-OpenSSL-x64-3.3.0.exe
 RABBITMQ := $(EXE_BUILD_DIR)/redist/rabbitmq-server-4.2.1.exe
 ERLANG := $(EXE_BUILD_DIR)/redist/otp_win64_27.3.4.6.exe
@@ -531,7 +535,7 @@ $(EXE): iss_file = common.iss
 $(EXE): $(COMMON_DEPS) documentserver documentserver-example $(NGINX) $(PSQL) $(WINSW)
 
 $(EXE_PR): iss_file = prerequisites.iss
-$(EXE_PR): $(EXE_PR_DEPS)
+$(EXE_PR): $(EXE_PR_DEPS) $(PYTHON_WHEELS_STAMP)
 
 $(TAR):
 	cd ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW) && \
@@ -574,6 +578,14 @@ $(VC2022)     : url = https://aka.ms/vs/17/release/vc_redist.x64.exe
 
 $(WINSW) $(EXE_PR_DEPS):
 	mkdir -p $(@D) && $(CURL) $@ $(url)
+
+$(PYTHON_WHEELS_STAMP): $(PYTHON_REQUIREMENTS)
+	mkdir -p $(PYTHON_WHEELS_DIR) && \
+	find $(PYTHON_WHEELS_DIR) -maxdepth 1 -type f -name '*.whl' -delete && \
+	$(PIP_DOWNLOAD) --dest $(PYTHON_WHEELS_DIR) --only-binary=:all: \
+		--platform win_amd64 --python-version 311 --implementation cp --abi cp311 \
+		--requirement $(PYTHON_REQUIREMENTS) && \
+	touch $@
 
 packages: $(PACKAGES)
 

@@ -25,7 +25,7 @@ rpm/                — RPM spec files and templates
 exe/                — Windows installer (Inno Setup scripts, data, nginx configs)
   InnoDependencyInstaller/  — Git submodule for Windows deps
   winsw/            — WinSW XML service configs (AdminPanel, Converter, DocService, Example, Proxy)
-  scripts/          — Python helper scripts (e.g. connectionRabbit.py)
+  scripts/          — Python helper scripts (e.g. connection.py)
 ```
 
 ## Build
