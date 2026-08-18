@@ -511,8 +511,8 @@ Name: "Prerequisites"; Description: "{cm:Prerequisites}"; Types: full
 Name: "Prerequisites\WinAcme"; Description: "WinAcme v2.2.9.1701"; Flags: checkablealone; Types: full; Check: not IsWinAcmeInstalled;
 Name: "Prerequisites\OpenSSL"; Description: "OpenSSL"; Flags: fixed; Types: full custom compact; Check: not IsOpenSSLInstalled;
 Name: "Prerequisites\Python"; Description: "Python 3.11.3 "; Flags: checkablealone; Types: full; Check: IsCommercial and not IsPythonInstalled;
-Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.1"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsPostgreSQLInstalled;
-Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.2.1"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRabbitMQInstalled;
+Name: "Prerequisites\PostgreSQL"; Description: "PostgreSQL 18.6"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsPostgreSQLInstalled;
+Name: "Prerequisites\RabbitMq"; Description: "RabbitMQ 4.3.5"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRabbitMQInstalled;
 Name: "Prerequisites\Redis"; Description: "Redis 7.4.0"; Flags: checkablealone; Types: full; Check: IsCommercial and not IsRedisInstalled and not UseLocalStorage;
 
 [Code]
