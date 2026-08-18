@@ -581,7 +581,7 @@ $(WINSW) $(EXE_PR_DEPS):
 
 $(PYTHON_WHEELS_STAMP): $(PYTHON_REQUIREMENTS)
 	mkdir -p $(PYTHON_WHEELS_DIR) && \
-	find $(PYTHON_WHEELS_DIR) -maxdepth 1 -type f -name '*.whl' -delete && \
+	rm -f $(PYTHON_WHEELS_DIR)/*.whl && \
 	$(PIP_DOWNLOAD) --dest $(PYTHON_WHEELS_DIR) --only-binary=:all: \
 		--platform win_amd64 --python-version 311 --implementation cp --abi cp311 \
 		--requirement $(PYTHON_REQUIREMENTS) && \
