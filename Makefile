@@ -231,7 +231,7 @@ COMMON_DEPS += common/documentserver/nginx/includes/ds-adminpanel.conf
 endif
 
 LINUX_DEPS += common/documentserver/logrotate/ds.conf
-LINUX_DEPS += common/documentserver/fontconfig/documentserver-fonts.conf
+LINUX_DEPS += common/documentserver/fontconfig/09-documentserver-fonts.conf
 
 #Prevent copy old artifacts
 LINUX_DEPS_CLEAN += common/documentserver/logrotate/*.conf

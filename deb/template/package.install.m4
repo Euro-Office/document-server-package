@@ -26,7 +26,7 @@ ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 
 ../../common/documentserver/logrotate/*.conf etc/M4_DS_PREFIX/logrotate
 
-../../common/documentserver/fontconfig/documentserver-fonts.conf etc/fonts/conf.d
+../../common/documentserver/fontconfig/09-documentserver-fonts.conf etc/fonts/conf.d
 
 ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 ../../common/documentserver-example/config/* etc/M4_DS_PREFIX-example
