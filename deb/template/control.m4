@@ -34,5 +34,6 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
   xxd,
   zlib1g
 Recommends:
+  sudo,
 Description: defn(`DEB[Summary]')
 defn(`DEB[Description]')
