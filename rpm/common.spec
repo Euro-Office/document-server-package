@@ -269,9 +269,7 @@ esac
 
 if [ "$IS_UPGRADE" = "true" ]; then
   NGINX_CONF=%{_sysconfdir}/%{_ds_prefix}/nginx/ds.conf
-  if [ -e $NGINX_CONF ] && ! grep -q secure_link_secret $NGINX_CONF; then
-	  sed '/server_tokens/a \ \ set $secure_link_secret verysecretstring;' -i $NGINX_CONF
-  fi
+  [ -e $NGINX_CONF ] && documentserver-update-securelink --generate-secret -r false
 
   chown ds:ds %{_localstatedir}/log/%{_ds_prefix}/**/*.log
 

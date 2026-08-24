@@ -254,12 +254,10 @@ setup_nginx(){
 
   if [ ! -e $DS_CONF ]; then
 	  cp -f ${DS_CONF}.tmpl ${DS_CONF}
-	  
-	  # generate secure link
-	  [ -z "$DS_DOCKER_INSTALLATION" ] && documentserver-update-securelink -s $(tr -dc A-Za-z0-9 </dev/urandom | head -c 20) -r false
-  elif ! grep -q secure_link_secret $DS_CONF; then
-	  sed '/server_tokens/a \ \ set $secure_link_secret verysecretstring;' -i $DS_CONF
   fi
+
+  # generate secure link
+  [ -z "$DS_DOCKER_INSTALLATION" ] && documentserver-update-securelink --generate-secret -r false
 
   db_get M4_ONLYOFFICE_VALUE/ds-port || true
   DS_PORT="$RET"
