@@ -65,6 +65,7 @@
 #define RedisHost              DefHost
 
 #define WINSW                 '{app}\winsw\WinSW-x64.exe'
+#define WINACME               '{pf}\Win-Acme\wacs.exe'
 
 #define LOCAL_SERVICE 'NT Authority\LocalService'
 
@@ -475,6 +476,7 @@ Filename: "schtasks"; Parameters: "/Create /F /RU ""{#LOCAL_SERVICE}"" /SC DAILY
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""{#NGINX_SRV_DESCR}"" program=""{#NGINX_SRV_DIR}\nginx.exe"" dir=in action=allow protocol=tcp localport={code:GetDefaultPorts}"; Flags: runhidden; StatusMsg: "{cm:FireWallExt}"
 
 Filename: "{cmd}"; Parameters: "/C icacls ""{pf}\Win-Acme"" /grant ""NT AUTHORITY\LOCAL SERVICE:(OI)(CI)M"" /T"; Flags: runhidden waituntilterminated
+Filename: "{#WINACME}"; Parameters: "--version"; Flags: runhidden waituntilterminated; Check: FileExists(ExpandConstant('{#WINACME}'))
 
 [UninstallRun]
 Filename: "{app}\bin\documentserver-prepare4shutdown.bat"; Flags: runhidden
