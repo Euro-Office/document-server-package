@@ -16,4 +16,4 @@ Requires: iproute
 Requires: liberation-mono-fonts
 Requires: msttcore-fonts-installer
 # -- enterprise/developer editions only
-ifelse(regexp(M4_PACKAGE_NAME, `documentserver$'),-1,`Requires: certbot',)
+ifelse(regexp(M4_PACKAGE_NAME, `documentserver$'),-1,`Requires: certbot, python3-certbot-nginx',)

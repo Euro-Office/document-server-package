@@ -26,6 +26,7 @@ dnl -- enterprise/developer editions only
 ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,
 `  postgresql-client (>= 12) | mysql-client (>= 8.0) | mysql-community-client (>= 8.0) | mariadb-client (>= 10.3),
   certbot,
+  python3-certbot-nginx,
   redis-tools,'
 ,)dnl
 Description: defn(`DEB[Summary]')

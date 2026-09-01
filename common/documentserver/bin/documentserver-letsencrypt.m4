@@ -3,7 +3,6 @@ set -euo pipefail
 umask 022
 
 LETSENCRYPT_ROOT_DIR="/etc/letsencrypt/live"
-ROOT_DIR="M4_DS_ROOT/letsencrypt"
 NGINX_CONF_DIR="/etc/M4_DS_PREFIX/nginx"
 
 if [ "$#" -ge "2" ]; then
@@ -25,11 +24,9 @@ if [ "$#" -ge "2" ]; then
 
     DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-    mkdir -p -- "$ROOT_DIR"
-
     command -v certbot >/dev/null 2>&1 || { echo "certbot not found" >&2; exit 5; }
-    printf 'certbot certonly --expand --webroot -w %q --noninteractive --agree-tos --email %q -d %q\n' "$ROOT_DIR" "$LETS_ENCRYPT_MAIL" "$LETS_ENCRYPT_DOMAIN" > /var/log/le-start.log
-    certbot certonly --expand --webroot -w "$ROOT_DIR" --noninteractive --agree-tos --email "$LETS_ENCRYPT_MAIL" -d "$LETS_ENCRYPT_DOMAIN" 2>&1 | tee /var/log/le-new.log
+    printf 'certbot certonly --expand --nginx --noninteractive --agree-tos --email %q -d %q\n' "$LETS_ENCRYPT_MAIL" "$LETS_ENCRYPT_DOMAIN" > /var/log/le-start.log
+    certbot certonly --expand --nginx --noninteractive --agree-tos --email "$LETS_ENCRYPT_MAIL" -d "$LETS_ENCRYPT_DOMAIN" 2>&1 | tee /var/log/le-new.log
 
     if [ -f "$SSL_CERT" ] && [ -f "$SSL_KEY" ]; then
         if [ -f "${NGINX_CONF_DIR}/ds-ssl.conf.tmpl" ]; then
