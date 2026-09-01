@@ -947,7 +947,7 @@ begin
   end
   else
   begin
-    JWTSecret := RandomString(30);
+    JWTSecret := RandomString(32);
   end;
   Result := JWTSecret;
 end;
