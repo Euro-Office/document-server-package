@@ -39,6 +39,8 @@ if [ "$#" -ge "2" ]; then
 
             cp -f -- "${NGINX_CONF_DIR}/ds-ssl.conf.tmpl" "${NGINX_CONF_DIR}/ds.conf"
             sed -e "s|^[[:space:]]*set[[:space:]]\+\$secure_link_secret[[:space:]]\+.*;|set \$secure_link_secret \"${SECURE_LINK_SECRET_ESC}\";|" \
+                -e "s|listen \[::\]:80 default_server;|listen [::]:80;|" \
+                -e "s|^[[:space:]]*server_name[[:space:]]\+_;|  server_name ${LETS_ENCRYPT_DOMAIN};|" \
                 -e "s|{{SSL_CERTIFICATE_PATH}}|${SSL_CERT_ESC}|g" \
                 -e "s|{{SSL_KEY_PATH}}|${SSL_KEY_ESC}|g" -i "${NGINX_CONF_DIR}/ds.conf" 
         fi
