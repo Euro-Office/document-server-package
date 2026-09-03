@@ -19,6 +19,13 @@ while [ "$1" != "" ]; do
 			fi
 		;;
 
+		--listenaddress )
+			if [ "$2" != "" ]; then
+				LISTEN_ADDRESS=$2
+				shift
+			fi
+		;;
+
 		-dbt | --databasetype )
 			if [ "$2" != "" ]; then
 				DB_TYPE=$2
@@ -156,7 +163,7 @@ while [ "$1" != "" ]; do
 			echo "  Usage: documentserver-configure [PARAMETER] [[PARAMETER], ...]"
 			echo
 			echo "    Parameters:"
-			echo "      -p, --dsport                 The value by that incoming connections are listened                             ( Defaults to 8083 )"
+			echo "           --listenaddress         The address and port on which incoming connections are listened                 ( Defaults to 0.0.0.0:8083 )"
 			echo "      -je, --jwtenabled            Specifies the enabling the JSON Web Token validation                            ( Defaults to true )"
 			echo "      -js, --jwtsecret             Defines the secret key to validate the JSON Web Token in the request            ( Defaults to random secret )"
 			echo "      -jh, --jwtheader             Defines the http header that will be used to send the JSON Web Token            ( Defaults to Authorization )"
@@ -194,6 +201,17 @@ AMQP_SERVER_TYPE=${AMQP_SERVER_TYPE:-rabbitmq}
 
 DB_TYPE=${DB_TYPE:-postgres}
 DS_PORT=${DS_PORT:-8083}
+LISTEN_ADDRESS=${LISTEN_ADDRESS:-0.0.0.0:${DS_PORT}}
+if ! printf '%s\n' "$LISTEN_ADDRESS" | awk -F '[:.]' '
+	NF != 5 || NR > 1 { exit 1 }
+	$5 !~ /^[0-9]+$/ || $5 < 1 || $5 > 65535 { exit 1 }
+	{ for (i = 1; i <= 4; i++) if ($i !~ /^[0-9]+$/ || $i > 255) exit 1 }
+'; then
+	echo "Error: invalid listenaddress '${LISTEN_ADDRESS}' (example: 127.0.0.1:8083)." >&2
+	exit 1
+fi
+DS_PORT=${LISTEN_ADDRESS##*:}
+LISTEN_ADDRESS=${LISTEN_ADDRESS%:*}
 
 if [ -z $JWT_SECRET ] && [ -z $JWT_ENABLED ]; then
 	JWT_MESSAGE="JWT is enabled by default. A random secret is generated automatically. Run the command '# documentserver-jwt-status' to get information about JWT."
@@ -501,10 +519,15 @@ setup_nginx(){
   DS_CONF_TMPL=$NGINX_CONF_DIR/ds.conf.tmpl
   DS_CONF=$NGINX_CONF_DIR/ds.conf
 
+  port_conflict(){
+    ss -tlnp 2>/dev/null | grep ":$1 " | grep -Fqv 'users:(("nginx",' ||
+      { ! grep -q "listen .*:$1\([ ;]\)" "$DS_CONF" 2>/dev/null && ss -tlnp 2>/dev/null | grep -q ":$1 "; }
+  }
+
   # pre-declare cache_tag; flush-cache.sh sets the real value later
   [ -e /etc/nginx/includes/ds-cache.conf ] || echo 'set $cache_tag "";' > /etc/nginx/includes/ds-cache.conf
 
-  if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+  if port_conflict "$DS_PORT"; then
     PORT_ERROR=false
 
     if [ "${DS_PORT}" = "8083" ]; then
@@ -513,7 +536,7 @@ setup_nginx(){
     else
       REQUESTED_PORT="$DS_PORT" DS_PORT=8083
 
-      if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+      if port_conflict "$DS_PORT"; then
         PORT_ERROR=true
         echo "Error: port ${REQUESTED_PORT} is already in use, and so is the fallback port ${DS_PORT}. Nginx configuration skipped." >&2
       else
@@ -521,13 +544,19 @@ setup_nginx(){
       fi
     fi
 
-    echo "  To reconfigure, run: documentserver-configure --dsport <PORT>" >&2
+    echo "  To reconfigure, run: documentserver-configure --listenaddress <ADDRESS:PORT>" >&2
 
     [ "${PORT_ERROR}" = true ] && return 0
   fi
 
   cp -f ${DS_CONF_TMPL} ${DS_CONF}
   sed 's/\(listen .*:\)\([0-9]\{2,5\}\b\)\( default_server\)\?\(;\)/\1'${DS_PORT}'\3\4/' -i $DS_CONF
+  sed "s/listen [0-9.]\+:/listen ${LISTEN_ADDRESS}:/" -i $DS_CONF
+  if [ "${LISTEN_ADDRESS}" = "0.0.0.0" ]; then
+    sed 's/listen \[::1\]:/listen [::]:/' -i $DS_CONF
+  else
+    sed 's/listen \[::\]:/listen [::1]:/' -i $DS_CONF
+  fi
 
   # check if ipv6 supported otherwise remove it from nginx config
   if [ ! -f /proc/net/if_inet6 ]; then

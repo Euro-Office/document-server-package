@@ -11,18 +11,31 @@ DB_NAME=""
 DB_USER=""
 DB_PWD=""
 
-db_fset M4_ONLYOFFICE_VALUE/ds-port seen true
 db_fset M4_ONLYOFFICE_VALUE/jwt-enabled seen true
 db_fset M4_ONLYOFFICE_VALUE/jwt-secret seen true
 db_fset M4_ONLYOFFICE_VALUE/jwt-header seen true
 db_fset M4_ONLYOFFICE_VALUE/wopi-enabled seen true
 
-db_get M4_ONLYOFFICE_VALUE/ds-port
-DS_PORT="$RET"
-if [ "$1" = configure ] && [ -f /etc/M4_DS_PREFIX/nginx/ds.conf ]; then
-	DS_PORT=$(sed -n 's/^[[:space:]]*listen .*:\([0-9]\{2,5\}\).*/\1/p' /etc/M4_DS_PREFIX/nginx/ds.conf | head -n 1)
+db_get M4_ONLYOFFICE_VALUE/listenaddress
+LISTEN_ADDRESS="$RET"
+db_fget M4_ONLYOFFICE_VALUE/listenaddress seen
+if [ "$RET" != true ]; then
+	if [ -f /etc/M4_DS_PREFIX/nginx/ds.conf ]; then
+		LISTEN_ADDRESS=$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+:[0-9]\+\).*;/\1/p' /etc/M4_DS_PREFIX/nginx/ds.conf | head -n 1)
+	fi
+	db_fget M4_ONLYOFFICE_VALUE/ds-port seen
+	if [ "$RET" = true ]; then
+		db_get M4_ONLYOFFICE_VALUE/ds-port
+		LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:8083}"
+		LISTEN_ADDRESS="${LISTEN_ADDRESS%:*}:$RET"
+	fi
 fi
-db_set M4_ONLYOFFICE_VALUE/ds-port "${DS_PORT:-$RET}"
+LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:8083}"
+
+db_set M4_ONLYOFFICE_VALUE/listenaddress "$LISTEN_ADDRESS"
+db_set M4_ONLYOFFICE_VALUE/ds-port "${LISTEN_ADDRESS##*:}"
+db_fset M4_ONLYOFFICE_VALUE/listenaddress seen false
+db_fset M4_ONLYOFFICE_VALUE/ds-port seen false
 
 ifelse(regexp(M4_PACKAGE_NAME,`documentserver$'),-1,
 `db_fset M4_ONLYOFFICE_VALUE/db-type seen true

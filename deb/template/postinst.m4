@@ -249,20 +249,37 @@ save_jwt_params(){
 setup_nginx(){
    DS_CONF=$CONF_DIR/nginx/ds.conf
 
+  port_conflict(){
+    ss -tlnp 2>/dev/null | grep ":$1 " | grep -Fqv 'users:(("nginx",' ||
+      { ! grep -q "listen .*:$1\([ ;]\)" "$DS_CONF" 2>/dev/null && ss -tlnp 2>/dev/null | grep -q ":$1 "; }
+  }
+
   # pre-declare cache_tag; flush-cache.sh sets the real value later
   [ -e /etc/nginx/includes/ds-cache.conf ] || echo 'set $cache_tag "";' > /etc/nginx/includes/ds-cache.conf
 
   if [ ! -e $DS_CONF ]; then
 	  cp -f ${DS_CONF}.tmpl ${DS_CONF}
+  else
+    OLD_LISTEN_ADDRESS=$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+\):[0-9]\+.*/\1/p' "$DS_CONF" | head -n 1)
   fi
 
   # generate secure link
   [ -z "$DS_DOCKER_INSTALLATION" ] && documentserver-update-securelink --generate-secret -r false
 
-  db_get M4_ONLYOFFICE_VALUE/ds-port || true
-  DS_PORT="$RET"
+  db_get M4_ONLYOFFICE_VALUE/listenaddress || true
+  LISTEN_ADDRESS="$RET"
+  if ! printf '%s\n' "$LISTEN_ADDRESS" | awk -F '[:.]' '
+    NF != 5 || NR > 1 { exit 1 }
+    $5 !~ /^[0-9]+$/ || $5 < 1 || $5 > 65535 { exit 1 }
+    { for (i = 1; i <= 4; i++) if ($i !~ /^[0-9]+$/ || $i > 255) exit 1 }
+  '; then
+    echo "Error: invalid listenaddress '${LISTEN_ADDRESS}' (example: 127.0.0.1:8083)." >&2
+    return 1
+  fi
+  DS_PORT="${LISTEN_ADDRESS##*:}"
+  LISTEN_ADDRESS="${LISTEN_ADDRESS%:*}"
   
-  if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+  if port_conflict "$DS_PORT"; then
     PORT_ERROR=false
 
     if [ "${DS_PORT}" = "8083" ]; then
@@ -271,24 +288,32 @@ setup_nginx(){
     else
       REQUESTED_PORT="$DS_PORT" DS_PORT=8083
 
-      if ss -tlnp 2>/dev/null | grep -q ":${DS_PORT} "; then
+      if port_conflict "$DS_PORT"; then
         PORT_ERROR=true
         echo "Error: port ${REQUESTED_PORT} is already in use, and so is the fallback port ${DS_PORT}. Nginx configuration skipped." >&2
       else
         db_set M4_ONLYOFFICE_VALUE/ds-port "${DS_PORT}" || true
+        db_set M4_ONLYOFFICE_VALUE/listenaddress "${LISTEN_ADDRESS}:${DS_PORT}" || true
         echo "Warning: port ${REQUESTED_PORT} is already in use, falling back to port ${DS_PORT}." >&2
       fi
     fi
 
     echo "  To reconfigure, run:" >&2
-    echo "    echo 'M4_PACKAGE_NAME M4_ONLYOFFICE_VALUE/ds-port string <PORT>' | debconf-set-selections" >&2
+    echo "    echo 'M4_PACKAGE_NAME M4_ONLYOFFICE_VALUE/listenaddress string <ADDRESS:PORT>' | debconf-set-selections" >&2
     echo "    dpkg-reconfigure -f noninteractive M4_PACKAGE_NAME" >&2
 
-    [ "${PORT_ERROR}" = true ] && return 0
+    [ "${PORT_ERROR}" = true ] && { OLD_LISTEN_ADDRESS=; return 0; }
   fi
 
   # setup ds port
   sed 's/\(listen .*:\)\([0-9]\{2,5\}\b\)\( default_server\)\?\(;\)/\1'${DS_PORT}'\3\4/' -i $DS_CONF
+  sed -e "0,/listen [0-9.]\+:/{s/listen [0-9.]\+:/listen ${LISTEN_ADDRESS}:/}" \
+      -e "/listen [0-9.]\+:.* ssl/s/listen [0-9.]\+:/listen ${LISTEN_ADDRESS}:/" -i $DS_CONF
+  if [ "${LISTEN_ADDRESS}" = "0.0.0.0" ]; then
+    sed '/internal services/,/^}/!s/listen \[::1\]:/listen [::]:/' -i "$DS_CONF"
+  else
+    sed '/internal services/,/^}/!s/listen \[::\]:/listen [::1]:/' -i "$DS_CONF"
+  fi
 
   # check if ipv6 supported otherwise remove it from nginx config
   if [ ! -f /proc/net/if_inet6 ]; then
@@ -429,7 +454,11 @@ ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 				fi
 			done
 
-			service nginx reload 2>/dev/null || service nginx start >/dev/null 2>&1
+			if [ -n "${OLD_LISTEN_ADDRESS:-}" ] && [ "$OLD_LISTEN_ADDRESS" != "$LISTEN_ADDRESS" ]; then
+				service nginx restart >/dev/null 2>&1
+			else
+				service nginx reload 2>/dev/null || service nginx start >/dev/null 2>&1
+			fi
 		fi
 		echo "Congratulations, the M4_COMPANY_NAME M4_PRODUCT_NAME has been installed successfully!"
 		echo "$JWT_MESSAGE"

@@ -33,6 +33,9 @@ if [ "$#" -ge "2" ]; then
             SECURE_LINK_SECRET="$(grep -oP '(?<=secure_link_secret ).*(?=;)' "${NGINX_CONF_DIR}/ds.conf" | head -n 1 || true)"
             [ -z "$SECURE_LINK_SECRET" ] && { echo "secure_link_secret not found in ${NGINX_CONF_DIR}/ds.conf" >&2; exit 3; }
 
+            LISTEN_ADDRESS="$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+\):[0-9]\+.*;/\1/p' "${NGINX_CONF_DIR}/ds.conf" | head -n 1)"
+            [ -z "$LISTEN_ADDRESS" ] && { echo "listen address not found in ${NGINX_CONF_DIR}/ds.conf" >&2; exit 3; }
+
             SECURE_LINK_SECRET_ESC="$(printf '%s' "$SECURE_LINK_SECRET" | tr -d '\r\n' | sed 's/^"\(.*\)"$/\1/; s/[\\&|]/\\&/g')"
             SSL_CERT_ESC="$(printf '%s' "$SSL_CERT" | sed 's/[\\&|]/\\&/g')"
             SSL_KEY_ESC="$(printf '%s' "$SSL_KEY" | sed 's/[\\&|]/\\&/g')"  
@@ -40,9 +43,12 @@ if [ "$#" -ge "2" ]; then
             cp -f -- "${NGINX_CONF_DIR}/ds-ssl.conf.tmpl" "${NGINX_CONF_DIR}/ds.conf"
             sed -e "s|^[[:space:]]*set[[:space:]]\+\$secure_link_secret[[:space:]]\+.*;|set \$secure_link_secret \"${SECURE_LINK_SECRET_ESC}\";|" \
                 -e "s|listen \[::\]:80 default_server;|listen [::]:80;|" \
+                -e "s|listen 0\.0\.0\.0:|listen ${LISTEN_ADDRESS}:|g" \
                 -e "s|^[[:space:]]*server_name[[:space:]]\+_;|  server_name ${LETS_ENCRYPT_DOMAIN};|" \
                 -e "s|{{SSL_CERTIFICATE_PATH}}|${SSL_CERT_ESC}|g" \
                 -e "s|{{SSL_KEY_PATH}}|${SSL_KEY_ESC}|g" -i "${NGINX_CONF_DIR}/ds.conf" 
+
+            [ "$LISTEN_ADDRESS" = "0.0.0.0" ] || sed 's|listen \[::\]:|listen [::1]:|' -i "${NGINX_CONF_DIR}/ds.conf"
         fi
     fi
 
