@@ -376,8 +376,6 @@ Filename: "{app}\bin\documentserver-pluginsmanager.bat"; Parameters: "-r false -
 
 Filename: "{app}\bin\documentserver-flush-cache.bat"; Parameters: "-r false"; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\bin\documentserver-static-gzip.ps1"" -NoRestartService"; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
-
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services===undefined)this.services={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 
 Filename: "{#JSON}"; Parameters: "{#JSON_PARAMS} -e ""if(this.services.CoAuthoring===undefined)this.services.CoAuthoring={{};"""; Flags: runhidden; StatusMsg: "{cm:CfgDs}"

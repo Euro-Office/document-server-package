@@ -62,4 +62,5 @@ IF NOT "%ONLYOFFICE_DATA_CONTAINER%"=="true" (
   net stop DsConverterSvc
   net start DsConverterSvc
   call "%~dp0\documentserver-flush-cache.bat"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0\documentserver-static-gzip.ps1"
 )
