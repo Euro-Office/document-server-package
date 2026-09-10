@@ -20,14 +20,16 @@ db_get M4_ONLYOFFICE_VALUE/listenaddress
 LISTEN_ADDRESS="$RET"
 db_fget M4_ONLYOFFICE_VALUE/listenaddress seen
 if [ "$RET" != true ]; then
+	LISTEN_ADDRESS=""
 	if [ -f /etc/M4_DS_PREFIX/nginx/ds.conf ]; then
 		LISTEN_ADDRESS=$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+:[0-9]\+\).*;/\1/p' /etc/M4_DS_PREFIX/nginx/ds.conf | head -n 1)
 	fi
-	db_fget M4_ONLYOFFICE_VALUE/ds-port seen
-	if [ "$RET" = true ]; then
-		db_get M4_ONLYOFFICE_VALUE/ds-port
-		LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:8083}"
-		LISTEN_ADDRESS="${LISTEN_ADDRESS%:*}:$RET"
+	if [ -z "$LISTEN_ADDRESS" ]; then
+		db_fget M4_ONLYOFFICE_VALUE/ds-port seen
+		if [ "$RET" = true ]; then
+			db_get M4_ONLYOFFICE_VALUE/ds-port
+			LISTEN_ADDRESS="0.0.0.0:$RET"
+		fi
 	fi
 fi
 LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:8083}"
