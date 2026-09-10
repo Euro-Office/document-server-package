@@ -10,6 +10,24 @@ upstream example {
   server localhost:3000;
 }
 
+# Skip successful static and healthcheck reads
+map "$request_method:$status:$uri" $ds_access_loggable {
+  ~^(GET|HEAD):[23][0-9][0-9]:/(?:\Q`'M4_PRODUCT_VERSION\E-[^/]+/)?(?:web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|welcome)(?:/|$) 0;
+  ~^(GET|HEAD):[23][0-9][0-9]:/(?:\Q`'M4_PRODUCT_VERSION\E-[^/]+/)?(?:document_editor_service_worker\.js|meta/formats|healthcheck/?)$ 0;
+  default 1;
+}
+
+log_format ds_access escape=json
+  '{"timestamp":"$time_iso8601",'
+  '"client_ip":"$remote_addr",'
+  '"method":"$request_method",'
+  '"uri":"$uri",'
+  '"status":$status,'
+  '"bytes_sent":$bytes_sent,'
+  '"request_time":$request_time,'
+  '"upstream_status":"$upstream_status",'
+  '"upstream_response_time":"$upstream_response_time"}';
+
 map $http_host $this_host {
     "" $host;
     default $http_host;

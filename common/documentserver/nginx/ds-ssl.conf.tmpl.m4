@@ -10,6 +10,8 @@ server {
 
   ## Redirects all traffic to the HTTPS host
   root /nowhere; ## root doesn't have to be a valid path since we are redirecting
+ifelse(M4_PLATFORM,linux,`  access_log M4_NGINX_LOG/nginx.access.log ds_access if=$ds_access_loggable;
+')dnl
   rewrite ^ https://$host$request_uri? permanent;
 }
 

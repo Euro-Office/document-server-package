@@ -23,5 +23,5 @@ gzip_types  text/plain
             application/rtf
             application/wasm;
 
-access_log off;
+ifelse(M4_PLATFORM,linux,`access_log M4_NGINX_LOG/nginx.access.log ds_access if=$ds_access_loggable;',`access_log off;')
 error_log M4_NGINX_LOG/nginx.error.log;
