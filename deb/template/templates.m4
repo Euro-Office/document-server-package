@@ -67,13 +67,13 @@ Description: RabbitMQ password:
 
 Template: M4_ONLYOFFICE_VALUE/ds-port
 Type: string
-Default: 8083
+Default: M4_DS_DEFAULT_PORT
 Description: Legacy M4_PRODUCT_NAME listening port:
  Use M4_ONLYOFFICE_VALUE/listenaddress instead.
 
 Template: M4_ONLYOFFICE_VALUE/listenaddress
 Type: string
-Default: 0.0.0.0:8083
+Default: 0.0.0.0:M4_DS_DEFAULT_PORT
 Description: M4_PRODUCT_NAME listening address and port:
 
 Template: M4_ONLYOFFICE_VALUE/jwt-enabled

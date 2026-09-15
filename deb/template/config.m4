@@ -18,8 +18,8 @@ db_fset M4_ONLYOFFICE_VALUE/wopi-enabled seen true
 
 db_get M4_ONLYOFFICE_VALUE/listenaddress
 LISTEN_ADDRESS="$RET"
-db_fget M4_ONLYOFFICE_VALUE/listenaddress seen
-if [ "$RET" != true ]; then
+# (Docs v10.0.0) keep a real listenaddress; only derive from ds.conf/ds-port when it's still the default
+if [ "$LISTEN_ADDRESS" = "0.0.0.0:M4_DS_DEFAULT_PORT" ]; then
 	LISTEN_ADDRESS=""
 	if [ -f /etc/M4_DS_PREFIX/nginx/ds.conf ]; then
 		LISTEN_ADDRESS=$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+:[0-9]\+\).*;/\1/p' /etc/M4_DS_PREFIX/nginx/ds.conf | head -n 1)
@@ -32,7 +32,7 @@ if [ "$RET" != true ]; then
 		fi
 	fi
 fi
-LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:8083}"
+LISTEN_ADDRESS="${LISTEN_ADDRESS:-0.0.0.0:M4_DS_DEFAULT_PORT}"
 
 db_set M4_ONLYOFFICE_VALUE/listenaddress "$LISTEN_ADDRESS"
 db_set M4_ONLYOFFICE_VALUE/ds-port "${LISTEN_ADDRESS##*:}"

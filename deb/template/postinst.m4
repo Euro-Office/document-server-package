@@ -273,20 +273,20 @@ setup_nginx(){
     $5 !~ /^[0-9]+$/ || $5 < 1 || $5 > 65535 { exit 1 }
     { for (i = 1; i <= 4; i++) if ($i !~ /^[0-9]+$/ || $i > 255) exit 1 }
   '; then
-    echo "Error: invalid listenaddress '${LISTEN_ADDRESS}' (example: 127.0.0.1:8083)." >&2
+    echo "Error: invalid listenaddress '${LISTEN_ADDRESS}' (example: 127.0.0.1:M4_DS_DEFAULT_PORT)." >&2
     return 1
   fi
   DS_PORT="${LISTEN_ADDRESS##*:}"
   LISTEN_ADDRESS="${LISTEN_ADDRESS%:*}"
-  
+
   if port_conflict "$DS_PORT"; then
     PORT_ERROR=false
 
-    if [ "${DS_PORT}" = "8083" ]; then
+    if [ "${DS_PORT}" = "M4_DS_DEFAULT_PORT" ]; then
       PORT_ERROR=true
       echo "Error: port ${DS_PORT} is already in use. Nginx configuration skipped." >&2
     else
-      REQUESTED_PORT="$DS_PORT" DS_PORT=8083
+      REQUESTED_PORT="$DS_PORT" DS_PORT=M4_DS_DEFAULT_PORT
 
       if port_conflict "$DS_PORT"; then
         PORT_ERROR=true
