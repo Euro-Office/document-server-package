@@ -55,6 +55,18 @@ map $http_x_forwarded_prefix $the_prefix {
     default $http_x_forwarded_prefix;
 }
 
+# add_header is not inherited by a level that declares its own, so each location repeats these
+map $the_scheme $hsts_header {
+    https "max-age=31536000";
+    default "";
+}
+
+# One-time cache reset for clients cached under the old expires 365d; stops once the cookie is set
+map $cookie_ds_cache_reset $clear_site_data {
+    "1" "";
+    default '"cache"';
+}
+
 proxy_set_header Host $http_host;
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection $proxy_connection;
