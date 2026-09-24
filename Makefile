@@ -19,6 +19,7 @@ PRODUCT_VERSION ?= 0.0.0
 BUILD_NUMBER ?= 0
 
 BRANDING_DIR ?= .
+BRANDING ?= onlyoffice
 
 PACKAGE_NAME := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME_LOW)
 PACKAGE_VERSION := $(PRODUCT_VERSION)-$(BUILD_NUMBER)
@@ -363,7 +364,7 @@ clean:
 		
 documentserver:
 	mkdir -p $(DOCUMENTSERVER_FILES)
-	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/*
+	cp -rf -t $(DOCUMENTSERVER) ../build_tools/out/$(TARGET)/$(BRANDING)/$(PRODUCT_SHORT_NAME_LOW)/*
 
 ifeq ($(PRODUCT_NAME_LOW),documentserver)
 	rm -rf $(DOCUMENTSERVER)/server/AdminPanel
@@ -444,8 +445,8 @@ endif
 
 documentserver-example:
 	mkdir -p $(DOCUMENTSERVER_EXAMPLE)/welcome
-	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)-example/*
-	cp -rf ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW)/$(PRODUCT_SHORT_NAME_LOW)/server/welcome/example/. $(DOCUMENTSERVER_EXAMPLE)/welcome/
+	cp -rf -t $(DOCUMENTSERVER_EXAMPLE) ../build_tools/out/$(TARGET)/$(BRANDING)/$(PRODUCT_SHORT_NAME_LOW)-example/*
+	cp -rf ../build_tools/out/$(TARGET)/$(BRANDING)/$(PRODUCT_SHORT_NAME_LOW)/server/welcome/example/. $(DOCUMENTSERVER_EXAMPLE)/welcome/
 	
 	mkdir -p $(DOCUMENTSERVER_EXAMPLE_CONFIG)
 
@@ -543,7 +544,7 @@ $(EXE_PR): iss_file = prerequisites.iss
 $(EXE_PR): $(EXE_PR_DEPS) $(PYTHON_WHEELS_STAMP)
 
 $(TAR):
-	cd ../build_tools/out/$(TARGET)/$(COMPANY_NAME_LOW) && \
+	cd ../build_tools/out/$(TARGET)/$(BRANDING) && \
 	tar -czf $(TAR) $(PRODUCT_SHORT_NAME_LOW)-snap
 
 $(NGINX):
