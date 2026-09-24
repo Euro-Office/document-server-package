@@ -554,8 +554,11 @@ setup_nginx(){
   sed "s/listen [0-9.]\+:/listen ${LISTEN_ADDRESS}:/" -i $DS_CONF
   if [ "${LISTEN_ADDRESS}" = "0.0.0.0" ]; then
     sed 's/listen \[::1\]:/listen [::]:/' -i $DS_CONF
-  else
+  elif [ -f /proc/net/if_inet6 ] && ip -6 addr show lo 2>/dev/null | grep -q '::1'; then
     sed 's/listen \[::\]:/listen [::1]:/' -i $DS_CONF
+  else
+    # IPv6 loopback isn't actually bindable on this host — an unconditional listen [::1]: would fail nginx's bind() and take the whole master process down, including the IPv4 listener
+    sed '/listen\s\+\[::\]:.\+/d' -i $DS_CONF
   fi
 
   # check if ipv6 supported otherwise remove it from nginx config
