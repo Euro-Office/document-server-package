@@ -251,7 +251,7 @@ setup_nginx(){
 
   port_conflict(){
     ss -tlnp 2>/dev/null | grep ":$1 " | grep -Fqv 'users:(("nginx",' ||
-      { ! grep -q "listen .*:$1\([ ;]\)" "$DS_CONF" 2>/dev/null && ss -tlnp 2>/dev/null | grep -q ":$1 "; }
+      { { [ "$FRESH_DS_CONF" = true ] || ! grep -q "listen .*:$1\([ ;]\)" "$DS_CONF" 2>/dev/null; } && ss -tlnp 2>/dev/null | grep -q ":$1 "; }
   }
 
   # pre-declare cache_tag; flush-cache.sh sets the real value later
@@ -259,6 +259,7 @@ setup_nginx(){
 
   if [ ! -e $DS_CONF ]; then
 	  cp -f ${DS_CONF}.tmpl ${DS_CONF}
+	  FRESH_DS_CONF=true
   else
     OLD_LISTEN_ADDRESS=$(sed -n 's/^[[:space:]]*listen[[:space:]]\+\([0-9.]\+\):[0-9]\+.*/\1/p' "$DS_CONF" | head -n 1)
   fi
