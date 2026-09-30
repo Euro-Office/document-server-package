@@ -100,7 +100,7 @@ else
   Write-Output "                  u1@example.com,u2@example.com. "
   Write-Output "      DOMAIN      Domain name to apply "
   Write-Output " "
-  Write-Output " Return to the default HTTP proxy configuration (port 80): "
+  Write-Output " Return to the default HTTP proxy configuration: "
   Write-Output "   documentserver-letsencrypt.ps1 -d | --default "
   Write-Output " Certificates and automatic renewal settings are preserved. "
 }
