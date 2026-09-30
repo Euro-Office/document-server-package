@@ -80,6 +80,16 @@ if ( $args.Count -ge 2 )
     Write-Warning "Unable to create the 'Win-Acme renew' scheduled task (SCHTASKS exit code: $LASTEXITCODE). Automatic certificate renewal will not run; please create the task manually."
   }
 }
+elseif ($args[0] -eq "-d" -or $args[0] -eq "--default") {
+  $app = Split-Path -Parent $PSScriptRoot
+  $nginx_conf_dir = "${app}\nginx\conf"
+  $config = "${nginx_conf_dir}\ds.conf"
+  $secure_link_secret = (Select-String -Path $config -Pattern 'secure_link_secret (.*)' | Select-Object -First 1).Matches.Groups[1].Value
+  Copy-Item "${nginx_conf_dir}\ds.conf.tmpl" -Destination $config
+  ((Get-Content -Path $config -Raw) -replace 'secure_link_secret (.*)', "secure_link_secret $secure_link_secret") | Set-Content -Path $config
+  Restart-Service -Name "DsProxySvc"
+  Write-Output "Returned to the default proxy configuration."
+}
 else
 {
   Write-Output " This script provided to automatically get Let's Encrypt SSL Certificates for Document Server "
@@ -89,4 +99,8 @@ else
   Write-Output "                  comma to register multiple emails, ex: "
   Write-Output "                  u1@example.com,u2@example.com. "
   Write-Output "      DOMAIN      Domain name to apply "
+  Write-Output " "
+  Write-Output " Return to the default HTTP proxy configuration (port 80): "
+  Write-Output "   documentserver-letsencrypt.ps1 -d | --default "
+  Write-Output " Certificates and automatic renewal settings are preserved. "
 }
