@@ -296,6 +296,11 @@ setup_nginx(){
         db_set M4_ONLYOFFICE_VALUE/ds-port "${DS_PORT}" || true
         db_set M4_ONLYOFFICE_VALUE/listenaddress "${LISTEN_ADDRESS}:${DS_PORT}" || true
         echo "Warning: port ${REQUESTED_PORT} is already in use, falling back to port ${DS_PORT}." >&2
+        if [ "${REQUESTED_PORT}" = "80" ] && { [ -e /etc/nginx/sites-enabled/default ] || [ -e /etc/nginx/conf.d/default.conf ]; }; then
+          echo "  To get M4_PRODUCT_NAME on port ${REQUESTED_PORT} instead, free it and reconfigure, e.g.:" >&2
+          [ -e /etc/nginx/sites-enabled/default ] && echo "    mv -f /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default.disabled" >&2
+          [ -e /etc/nginx/conf.d/default.conf ]   && echo "    mv -f /etc/nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf.disabled" >&2
+        fi
       fi
     fi
 
