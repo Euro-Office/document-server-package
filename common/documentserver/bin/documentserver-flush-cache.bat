@@ -1,4 +1,6 @@
 @echo off
+setlocal
+
 set "SCRIPT_PATH=%~dp0"
 :parse_args
 IF "%1"=="" goto :done
