@@ -36,6 +36,25 @@ location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(sdkjs-plugins)(\/.*\.json)$ {
   alias M4_DS_ROOT/$2$3;
 }
 
+# Harden the editor documents with a script-focused Content-Security-Policy.
+# The editor compiles code at runtime (eval/Function, WebAssembly) and starts
+# Blob-URL Workers, so 'unsafe-eval' and blob: have to stay. Pinning script-src
+# to 'self' means the editor context can neither load nor dynamically import a
+# script from another origin, and a Blob-URL Worker inherits this document's
+# policy, so that restriction reaches those Workers too. This is a deliberately
+# minimal script/worker policy; the other directives (img-src, style-src,
+# font-src, connect-src, frame-ancestors, ...) are intentionally left unset.
+# Covers every editor entry point: main, mobile, embed and forms, and the
+# index/index_loader/index_internal/index.reporter variants getAppPath() loads.
+# nginx add_header does not merge across levels, so the Cache-Control from the
+# block below is repeated here on purpose.
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps\/apps\/[^/]+\/(main|mobile|embed|forms)\/index[\w.]*\.html)$ {
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
+  add_header Content-Security-Policy "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'" always;
+  # gzip_static on;
+  alias M4_DS_ROOT/$2;
+}
+
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(\/.*)$ {
   add_header Cache-Control "public, max-age=31536000, immutable" always;
   # gzip_static on;
