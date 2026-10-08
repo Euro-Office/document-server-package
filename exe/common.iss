@@ -93,8 +93,6 @@
 
 #define REPLACE '{app}\npm\replace.exe'
 
-#define DEFAULT_PLUGINS_LIST '{app}\sdkjs-plugins\plugin-list-default.json'
-
 #define PROXY_SRV_FILE '{app}\winsw\Proxy.xml'
 #define NGINX_SRV  'DsProxySvc'
 #define NGINX_SRV_DISPLAY  str(sAppName + " Proxy")
@@ -202,9 +200,6 @@ ru.GenFonts=Создание AllFonts.js...
 en.InstallSrv=Installing service %1...
 ru.InstallSrv=Установка сервиса %1...
 
-en.InstallPlugins=Installing plugins ...
-ru.InstallPlugins=Установка плагинов ...
-
 en.PrevVer=The previous version of {#sAppName} detected, please click 'OK' button to uninstall it, or 'Cancel' to quit setup.
 ru.PrevVer=Обнаружена предыдущая версия {#sAppName}, нажмите кнопку 'OK' чтобы удалить её, или 'Отмена' чтобы выйти из программы инсталляции.
 
@@ -300,11 +295,8 @@ Source: ..\common\documentserver\home\*;            DestDir: {app}; Excludes: "A
 Source: ..\common\documentserver\home\*.exe;        DestDir: {app}; Excludes: "adminpanel.exe"; Flags: ignoreversion recursesubdirs signonce; Components: Program
 Source: ..\common\documentserver\config\*;          DestDir: {app}\config; Flags: ignoreversion recursesubdirs; Permissions: users-readexec; Components: Program
 Source: local\local.json;                           DestDir: {app}\config; Flags: onlyifdoesntexist uninsneveruninstall; Components: Program
-Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat documentserver-generate-allfonts.bat"; Flags: ignoreversion recursesubdirs; Components: Program
-Source: {#file "..\common\documentserver\bin\documentserver-generate-allfonts.bat"};         DestDir: {app}\bin; Excludes: "documentserver-pluginsmanager.bat"; Flags: ignoreversion; Components: Program; DestName: "documentserver-generate-allfonts.bat"
-#ifdef DS_PLUGIN_INSTALLATION
-Source: ..\common\documentserver\bin\documentserver-pluginsmanager.bat;    DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
-#endif
+Source: ..\common\documentserver\bin\*.bat;         DestDir: {app}\bin; Excludes: "documentserver-generate-allfonts.bat"; Flags: ignoreversion recursesubdirs; Components: Program
+Source: {#file "..\common\documentserver\bin\documentserver-generate-allfonts.bat"};         DestDir: {app}\bin; Flags: ignoreversion; Components: Program; DestName: "documentserver-generate-allfonts.bat"
 Source: ..\common\documentserver\bin\*.ps1;         DestDir: {app}\bin; Flags: ignoreversion recursesubdirs; Components: Program
 Source: nginx\nginx.conf;                           DestDir: {#NGINX_SRV_DIR}\conf; Flags: ignoreversion recursesubdirs; Components: Program
 Source: ..\common\documentserver\nginx\includes\*.conf;  DestDir: {#NGINX_SRV_DIR}\conf\includes; Flags: ignoreversion recursesubdirs; Components: Program
@@ -357,11 +349,6 @@ Root: HKLM; Subkey: "{#sAppRegPath}"; ValueType: "string"; ValueName: "{#REG_JWT
 
 [Run]
 Filename: "{app}\bin\documentserver-generate-allfonts.bat"; Parameters: "true"; Flags: runhidden; StatusMsg: "{cm:GenFonts}"
-
-#ifdef DS_PLUGIN_INSTALLATION
-Filename: "{app}\bin\documentserver-pluginsmanager.bat"; Parameters: "-r false --update ""{#DEFAULT_PLUGINS_LIST}"""; Flags: runhidden; StatusMsg: "{cm:InstallPlugins}"; Check: IsPluginsEnabled;
-Filename: "{app}\bin\documentserver-pluginsmanager.bat"; Parameters: "-r false --update-all"; Flags: runhidden; StatusMsg: "{cm:InstallPlugins}"; Check: not IsPluginsEnabled;
-#endif
 
 Filename: "{app}\bin\documentserver-flush-cache.bat"; Parameters: "-r false"; Flags: runhidden; StatusMsg: "{cm:CfgDs}"
 
@@ -523,7 +510,6 @@ var
   WopiPublicKey: String;
   WopiModulus: String;
   WopiExponent: String;
-  PluginsEnabled: String;
   IsDefaultDatabase: Boolean;
 
 procedure InitAmqpServerParams(Host, UserName, Password, Proto: String);
@@ -557,7 +543,6 @@ procedure Init;
 begin
   IsJWTRegistryExists := False;
   LocalJsonExists := False;
-  PluginsEnabled := LowerCase(ExpandConstant('{param:PLUGINS_ENABLED|true}'));
   IsDefaultDatabase := False;
 
   InitAmqpServerParams(
@@ -1053,15 +1038,6 @@ end;
 function GetWopiExponent(Param: string): string;
 begin
   Result := WopiExponent;
-end;
-
-function IsPluginsEnabled: Boolean;
-begin
-  Result := False;
-  if PluginsEnabled = 'true' then
-  begin
-    Result := True;
-  end;
 end;
 
 function IsCommercial: Boolean;
