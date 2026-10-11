@@ -172,13 +172,13 @@ illegal activity, or infringe our rights or the rights of others.
 4.1. During the period stated in the selected plan on the Official Website, we
 will provide consulting assistance for Docs and updates for the relevant parts
 of the Licensed Software when available, in accordance with the service level
-agreement published at https://onlyo.co/372RPLE. Consulting assistance for Apps
-is provided only if you have purchased and paid for support for Apps, and only
-for the purchased support period and scope.
-4.2. Support pricing is valid when posted on the Official Website but may
-change. The current support terms are available at https://onlyo.co/372RPLE.
-The prices and terms in effect at the time of purchase apply to each
-new support subscription.
+agreement published at https://www.onlyoffice.com/sla. Consulting assistance for
+Apps is provided only if you have purchased and paid for support for Apps, and
+only for the purchased support period and scope.
+4.2. Support pricing is valid when posted on the Official Website
+but may change. The current support terms are available at
+https://www.onlyoffice.com/sla. The prices and terms in effect at the time of
+purchase apply to each new support subscription.
 4.3. Our services include:
 (a) updates for the Licensed Software when available during the period stated in
 the selected plan; and
