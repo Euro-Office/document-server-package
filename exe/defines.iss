@@ -26,4 +26,3 @@
 
 #define sDbDefValue         'onlyoffice'
 #define DS_EXAMPLE
-#define DS_PLUGIN_INSTALLATION

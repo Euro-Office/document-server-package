@@ -101,9 +101,6 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 		JWT_MESSAGE="You have JWT disabled. We recommend enabling JWT in ${LOCAL_CONFIG} in services.CoAuthoring.token.enable and configure your custom JWT key in services.CoAuthoring.secret"
 	fi
 
-	db_get M4_ONLYOFFICE_VALUE/plugins-enabled || true
-	DS_PLUGIN_INSTALLATION=${DS_PLUGIN_INSTALLATION:-$RET}
-
 	db_get M4_ONLYOFFICE_VALUE/wopi-enabled || true
 	WOPI_ENABLED="$RET"
 }
@@ -379,13 +376,6 @@ ifelse('M4_DS_ADMINPANEL_ENABLE','1',`mkdir -p "$LOG_DIR/adminpanel"
 		if [ -z "$DS_DOCKER_INSTALLATION" ]; then
 			documentserver-generate-allfonts.sh true
 			documentserver-flush-cache.sh -r false
-		fi
-
-		# install/update plugins
-		if [ "$DS_PLUGIN_INSTALLATION" = "true" ]; then
-			echo -n Installing plugins, please wait...
-			documentserver-pluginsmanager.sh -r false --update=\"$DIR/sdkjs-plugins/plugin-list-default.json\" >/dev/null
-			echo Done
 		fi
 
 		#Deleting the cache left before updating the document server (Bug #60628)
