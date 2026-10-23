@@ -62,6 +62,9 @@ mkdir -p "$HOME_DIR/fonts"
 #Create an empty api.js to fix issues with upgrading to 8.2.0 (Bug #70877)
 touch "$HOME_DIR/web-apps/apps/api/documents/api.js"
 
+#deduplicate identical web-apps files (help images repeat per language and editor)
+hardlink --ignore-time "$HOME_DIR/web-apps"
+
 #install systemd services
 mkdir -p %{buildroot}/usr/lib/systemd/system
 cp %{_builddir}/../../../common/documentserver/systemd/ds-docservice.service %{buildroot}/usr/lib/systemd/system

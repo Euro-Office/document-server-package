@@ -3,7 +3,7 @@ Source: M4_PACKAGE_NAME
 Section: web
 Priority: optional
 Maintainer: M4_PUBLISHER_NAME <M4_SUPPORT_MAIL>
-Build-Depends: debhelper (>= 8.0.0)
+Build-Depends: debhelper (>= 8.0.0), util-linux (>= 2.38)
 
 Package: M4_PACKAGE_NAME
 Architecture: M4_DEB_ARCH
