@@ -255,7 +255,7 @@ LINUX_DEPS_CLEAN += common/documentserver-example/systemd/*.service
 
 LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.sh.m4))
 
-ifneq ($(COMPANY_NAME_LOW),onlyoffice)
+ifneq ($(COMPANY_NAME_LOW),euro-office)
 LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanager.sh,$(LINUX_DEPS))
 PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.sh.m4)
 endif
@@ -274,8 +274,8 @@ LINUX_DEPS += apt-rpm/bin/documentserver-configure.sh
 LINUX_DEPS_CLEAN += rpm/bin/*.sh
 LINUX_DEPS_CLEAN += apt-rpm/bin/*.sh
 
-ifeq ($(COMPANY_NAME_LOW),onlyoffice)
-ONLYOFFICE_VALUE := onlyoffice
+ifeq ($(COMPANY_NAME_LOW),euro-office)
+ONLYOFFICE_VALUE := euro-office
 else
 ONLYOFFICE_VALUE := ds
 endif
@@ -372,19 +372,19 @@ documentserver:
 	mv -f $(DOCUMENTSERVER)/server/Common/config/log4js/*.json $(DOCUMENTSERVER_CONFIG)/log4js/
 
 	# rename product specific folders
-	sed "s|onlyoffice\/documentserver|"$(DS_PREFIX)"|"  -i $(DOCUMENTSERVER_CONFIG)/*.json
+	sed "s|euro-office\/documentserver|"$(DS_PREFIX)"|"  -i $(DOCUMENTSERVER_CONFIG)/*.json
 
 	# rename db account params
-	sed 's|\("db.*": "\)onlyoffice\("\)|\1'$(ONLYOFFICE_VALUE)'\2|'  -i $(DOCUMENTSERVER_CONFIG)/*.json
+	sed 's|\("db.*": "\)euro-office\("\)|\1'$(ONLYOFFICE_VALUE)'\2|'  -i $(DOCUMENTSERVER_CONFIG)/*.json
 
 	# rename db schema name
-	sed 's|onlyoffice|'$(ONLYOFFICE_VALUE)'|'  -i $(DOCUMENTSERVER)/server/schema/**/*.sql
+	sed 's|euro-office|'$(ONLYOFFICE_VALUE)'|'  -i $(DOCUMENTSERVER)/server/schema/**/*.sql
 
 	# ignore CREATE DATABASE commands in MySQL
 	sed -r "s/^(CREATE DATABASE|USE)/-- \1/" -i $(DOCUMENTSERVER)/server/schema/mysql/*.sql
 
 	# rename product in license
-	sed "s|ONLYOFFICE|$(COMPANY_NAME)|" -i $(DOCUMENTSERVER)/server/3rd-Party.txt
+	sed "s|Euro-Office|$(COMPANY_NAME)|" -i $(DOCUMENTSERVER)/server/3rd-Party.txt
 	sed 's|DocumentServer|'$(PRODUCT_NAME)'|'  -i $(DOCUMENTSERVER)/server/3rd-Party.txt
 
 	# Prevent for modification original config
@@ -449,7 +449,7 @@ documentserver-example:
 	mv -f $(DOCUMENTSERVER_EXAMPLE)/config/*.json $(DOCUMENTSERVER_EXAMPLE_CONFIG)
 
 	# rename product specific folders
-	sed "s|onlyoffice\/documentserver|"$(DS_PREFIX)"|"  -i $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
+	sed "s|euro-office\/documentserver|"$(DS_PREFIX)"|"  -i $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
 
 	# Prevent for modification original config
 	chmod ug=r $(DOCUMENTSERVER_EXAMPLE_CONFIG)/*.json
@@ -501,7 +501,7 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		$(PACKAGE_NAME).spec
 
 M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
-ifeq ($(COMPANY_NAME_LOW),onlyoffice)
+ifeq ($(COMPANY_NAME_LOW),euro-office)
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
