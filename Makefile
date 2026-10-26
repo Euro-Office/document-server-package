@@ -396,8 +396,8 @@ documentserver:
 
 ifeq ($(PLATFORM),win)
 	cp -fr -t $(DOCUMENTSERVER)/license exe/license/*.license
-	echo ; >> $(DOCUMENTSERVER)/3rd-Party.txt
-	cat exe/license/3rd-Party.txt ; >> $(DOCUMENTSERVER)/3rd-Party.txt
+	echo >> $(DOCUMENTSERVER)/3rd-Party.txt
+	cat exe/license/3rd-Party.txt >> $(DOCUMENTSERVER)/3rd-Party.txt
 endif
 
 	cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) LICENSE-CC.txt NOTICE
@@ -529,7 +529,7 @@ common/documentserver/nginx/ds.conf: common/documentserver/nginx/ds.conf.tmpl
 deb/build/debian/% : deb/template/%
 	mkdir -pv $(@D) && cp -fv $< $@
 
-deb/build/debian/copyright : deb/template/copyright.m4
+deb/build/debian/copyright : deb/template/copyright.m4 $(LICENSE_FILE) LICENSE-CC.txt
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
 	awk -v MAIN_LICENSE="$(LICENSE_FILE)" -v CC_LICENSE="LICENSE-CC.txt" '\
 		/^License: CC-BY-SA-4.0$$/ { print; while ((getline l < CC_LICENSE)   > 0) print (l == "" ? " ." : " " l); next }\
