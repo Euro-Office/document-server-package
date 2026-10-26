@@ -1,5 +1,5 @@
 include(variables.m4)
-License: AGPL
+License: AGPL-3.0-only AND CC-BY-SA-4.0
 
 ifelse('M4_DS_EXAMPLE_ENABLE', '1',
 %define example 1,)

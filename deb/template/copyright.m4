@@ -1,30 +1,27 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: M4_PUBLISHER_NAME
 Upstream-Contact: M4_PUBLISHER_NAME <M4_SUPPORT_MAIL>
 Source: M4_PUBLISHER_URL
 
 Files: *
-Copyright: (c) Copyright M4_PUBLISHER_NAME, 2026 <M4_SUPPORT_MAIL>
+Copyright: (c) Copyright Ascensio System SIA, 2009-M4_CURRENT_YEAR
+           (c) Copyright Euro-Office contributors, 2026-M4_CURRENT_YEAR
+License: AGPL-3.0-only
 
-ifdef(COMMERCIAL, License: Commercial,
-License: AGPLv3
- This program is a free software product. You can redistribute it and/or 
- modify it under the terms of the GNU Affero General Public License (AGPL) 
- version 3 as published by the Free Software Foundation. In accordance with 
- Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect 
- that Ascensio System SIA expressly excludes the warranty of non-infringement
- of any third-party rights.
+Files: *.gif *.ico *.jpg *.png *.svg
+Copyright: Ascensio System SIA, with modifications by Euro-Office contributors
+License: CC-BY-SA-4.0
 
- This program is distributed WITHOUT ANY WARRANTY; without even the implied 
- warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For 
- details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+Files: */core-fonts/* */dictionaries/*
+Copyright: various, see accompanying licence files
+License: other
+ Fonts and dictionaries are third-party works under their own licences.
+ The licence files are installed next to them in core-fonts/ and
+ dictionaries/.
 
- The  interactive user interfaces in modified source and object code versions
- of the Program must display Appropriate Legal Notices, as required under 
- Section 5 of the GNU AGPL version 3.
-
- All the Product's GUI elements, including illustrations and icon sets, as
- well as technical writing content are licensed under the terms of the
- Creative Commons Attribution-ShareAlike 4.0 International. See the License
- terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
-)
+Files: */favicon_eo.svg */footer_help_eo.svg
+Copyright: Google LLC
+License: Apache-2.0
+ Material Symbols by Google, recoloured.
+ On Debian systems, the full text of the Apache License 2.0 can be found
+ in /usr/share/common-licenses/Apache-2.0.
