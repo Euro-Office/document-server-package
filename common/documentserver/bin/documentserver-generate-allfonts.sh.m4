@@ -57,10 +57,19 @@ echo -n Generating js caches, please wait...
 
 echo Done
 
-# Setting user rights for files created in the previous steps
+# Setting user rights for files created in the previous steps.
+# Only the generated ones, by name: the converters in this directory belong to
+# root, because the scripts in /usr/bin run them, and this script is one of
+# those. Handing the directory over to ds here would put back what the packages
+# take away, and a program root runs must not be one ds can rewrite. -h keeps
+# chown on a symlink in place of one of these names, as chown -R did before,
+# instead of handing ds whatever file the link points at.
 if [ "${ONLYOFFICE_K8S_CONTAINER}" != "true" ]; then
   chown -R ds:ds "$DIR/sdkjs"
-  chown -R ds:ds "$DIR/server/FileConverter/bin"
+  chown -h ds:ds \
+    "$DIR/server/FileConverter/bin/AllFonts.js" \
+    "$DIR/server/FileConverter/bin/font_selection.bin" \
+    "$DIR/server/FileConverter/bin/fonts.log" 2>/dev/null
   chown -R ds:ds "$DIR/fonts"
 fi
 

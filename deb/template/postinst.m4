@@ -366,6 +366,20 @@ ifelse('M4_DS_ADMINPANEL_ENABLE','1',`mkdir -p "$LOG_DIR/adminpanel"
 		chown ds:ds -R "$DIR"*
 		# set up read-only access to prevent modification ds's home directory
 		chmod a-w -R "$DIR"*
+		# what the root owned scripts in /usr/bin run stays owned by root: the
+		# blanket chown above hands everything under here to ds, and the owner of
+		# a program is one chmod away from replacing what root will execute.  The
+		# directories count as much as the files: chmod a-w does not hold against
+		# the owner of a directory, who can make it writable again, and a ds
+		# writable directory lets ds swap out x2t no matter who owns the file in it.
+		# That goes for every directory on the way down, not only the last one:
+		# in a ds owned server/ ds can rename the root owned tools/ aside and put
+		# its own in its place.  Only the directories themselves change owner, what
+		# is in them keeps its owner.
+		for f in "$DIR" "$DIR"*/server "$DIR"*/server/FileConverter "$DIR"*/npm "$DIR"*/server/tools "$DIR"*/server/tools/* "$DIR"*/server/FileConverter/bin "$DIR"*/server/FileConverter/bin/x2t "$DIR"*/server/FileConverter/bin/*.so* "$DIR"*/npm/json
+		do
+			if [ -e "$f" ]; then chown root:root "$f"; fi
+		done
 		chown ds:ds "$CONF_DIR"/*.json
 
 		getent group onlyoffice >/dev/null && { DATA_OWNER="onlyoffice:onlyoffice"; usermod -aG onlyoffice ds; } || DATA_OWNER="ds:ds"
