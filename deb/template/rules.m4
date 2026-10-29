@@ -18,6 +18,9 @@ override_dh_strip:
 execute_after_dh_fixperms:
 	chmod o-rwx debian/M4_PACKAGE_NAME/etc/M4_DS_PREFIX/*.json
 
+execute_before_dh_builddeb:
+	hardlink --ignore-time debian/M4_PACKAGE_NAME/var/www/M4_DS_PREFIX/web-apps
+
 override_dh_builddeb:
 	dh_builddeb -- -z9 -Zxz --threads-max=$(shell nproc)
 

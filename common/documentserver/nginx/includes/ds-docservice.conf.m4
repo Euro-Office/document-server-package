@@ -36,6 +36,15 @@ location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(sdkjs-plugins)(\/.*\.json)$ {
   alias M4_DS_ROOT/$2$3;
 }
 
+# Script-focused CSP for the editor pages; the editor needs 'unsafe-eval' and blob:.
+# Cache-Control is repeated here because add_header does not inherit across levels.
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps\/apps\/[^/]+\/(main|mobile|embed|forms)\/index[\w.]*\.html)$ {
+  add_header Cache-Control "public, max-age=31536000, immutable" always;
+  add_header Content-Security-Policy "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'" always;
+  # gzip_static on;
+  alias M4_DS_ROOT/$2;
+}
+
 location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(\/.*)$ {
   add_header Cache-Control "public, max-age=31536000, immutable" always;
   # gzip_static on;
