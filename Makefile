@@ -301,7 +301,9 @@ M4_PARAMS += -D M4_DS_FILES='$(DS_FILES)'
 M4_PARAMS += -D M4_DS_EXAMPLE='$(DS_EXAMPLE)'
 M4_PARAMS += -D M4_DEV_NULL='$(DEV_NULL)'
 M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
-M4_PARAMS += -D M4_CURRENT_YEAR=$(shell date +"%Y")
+CURRENT_YEAR := $(shell date +"%Y")
+M4_PARAMS += -D M4_CURRENT_YEAR=$(CURRENT_YEAR)
+M4_PARAMS += -D M4_CONTRIBUTORS_YEARS=$(if $(filter 2026,$(CURRENT_YEAR)),2026,2026-$(CURRENT_YEAR))
 
 RPMBUILD_BINARY_PAYLOAD ?= w9T$(shell nproc).xzdio
 
@@ -400,7 +402,8 @@ ifeq ($(PLATFORM),win)
 	cat exe/license/3rd-Party.txt >> $(DOCUMENTSERVER)/3rd-Party.txt
 endif
 
-	cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) LICENSE-CC.txt NOTICE
+	cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) LICENSE-CC.txt
+	m4 $(M4_PARAMS) NOTICE.m4 > $(DOCUMENTSERVER)/NOTICE
 
 	chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/x2t$(EXEC_EXT)
 	#chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/docbuilder$(EXEC_EXT)

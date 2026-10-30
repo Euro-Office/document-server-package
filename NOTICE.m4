@@ -1,5 +1,5 @@
-Copyright (C) Ascensio System SIA, 2009-2026
-Copyright (C) 2026 Euro-Office contributors
+Copyright (C) Ascensio System SIA, 2009-M4_CURRENT_YEAR
+Copyright (C) M4_CONTRIBUTORS_YEARS Euro-Office contributors
 
 Euro-Office is a modified version of ONLYOFFICE, originally developed by
 Ascensio System SIA. Euro-Office is not affiliated with, endorsed by, or

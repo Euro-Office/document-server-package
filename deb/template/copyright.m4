@@ -5,7 +5,7 @@ Source: M4_PUBLISHER_URL
 
 Files: *
 Copyright: (c) Copyright Ascensio System SIA, 2009-M4_CURRENT_YEAR
-           (c) Copyright Euro-Office contributors, 2026-M4_CURRENT_YEAR
+           (c) Copyright Euro-Office contributors, M4_CONTRIBUTORS_YEARS
 Comment: Bundled third-party components are listed with their licences in
  3rd-Party.txt and license/.
 License: AGPL-3.0-only
