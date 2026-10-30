@@ -67,7 +67,7 @@ DOCUMENTSERVER_FILES += $(DOCUMENTSERVER)/sdkjs-plugins
 3RD_PARTY_LICENSE_FILES += $(DOCUMENTSERVER)/server/3rd-Party.txt 
 3RD_PARTY_LICENSE_FILES += $(DOCUMENTSERVER)/server/license
 
-LICENSE_FILE = $(BRANDING_DIR)/common/documentserver/license/$(PACKAGE_NAME)/LICENSE.txt
+LICENSE_FILE := $(firstword $(wildcard $(BRANDING_DIR)/common/documentserver/license/$(PACKAGE_NAME)/LICENSE.txt) LICENSE)
 HTMLFILEINTERNAL = $(DOCUMENTSERVER)/server/FileConverter/bin/HtmlFileInternal/HtmlFileInternal
 
 DOCUMENTSERVER_EXAMPLE = common/documentserver-example/home
@@ -301,6 +301,9 @@ M4_PARAMS += -D M4_DS_FILES='$(DS_FILES)'
 M4_PARAMS += -D M4_DS_EXAMPLE='$(DS_EXAMPLE)'
 M4_PARAMS += -D M4_DEV_NULL='$(DEV_NULL)'
 M4_PARAMS += -D M4_PACKAGE_SERVICES='$(PACKAGE_SERVICES)'
+CURRENT_YEAR := $(shell date +"%Y")
+M4_PARAMS += -D M4_CURRENT_YEAR=$(CURRENT_YEAR)
+M4_PARAMS += -D M4_CONTRIBUTORS_YEARS=$(if $(filter 2026,$(CURRENT_YEAR)),2026,2026-$(CURRENT_YEAR))
 
 RPMBUILD_BINARY_PAYLOAD ?= w9T$(shell nproc).xzdio
 
@@ -395,13 +398,12 @@ documentserver:
 
 ifeq ($(PLATFORM),win)
 	cp -fr -t $(DOCUMENTSERVER)/license exe/license/*.license
-	echo ; >> $(DOCUMENTSERVER)/3rd-Party.txt
-	cat exe/license/3rd-Party.txt ; >> $(DOCUMENTSERVER)/3rd-Party.txt
+	echo >> $(DOCUMENTSERVER)/3rd-Party.txt
+	cat exe/license/3rd-Party.txt >> $(DOCUMENTSERVER)/3rd-Party.txt
 endif
 
-	[ -f $(LICENSE_FILE) ] \
-		&& cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) \
-		|| cp -f -t $(DOCUMENTSERVER) LICENSE
+	cp -f -t $(DOCUMENTSERVER) $(LICENSE_FILE) LICENSE-CC.txt
+	m4 $(M4_PARAMS) NOTICE.m4 > $(DOCUMENTSERVER)/NOTICE
 
 	chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/x2t$(EXEC_EXT)
 	#chmod u+x $(DOCUMENTSERVER)/server/FileConverter/bin/docbuilder$(EXEC_EXT)
@@ -529,6 +531,13 @@ common/documentserver/nginx/ds.conf: common/documentserver/nginx/ds.conf.tmpl
 
 deb/build/debian/% : deb/template/%
 	mkdir -pv $(@D) && cp -fv $< $@
+
+deb/build/debian/copyright : deb/template/copyright.m4 $(LICENSE_FILE) LICENSE-CC.txt
+	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) $< > $@
+	awk -v MAIN_LICENSE="$(LICENSE_FILE)" -v CC_LICENSE="LICENSE-CC.txt" '\
+		/^License: CC-BY-SA-4.0$$/ { print; while ((getline l < CC_LICENSE)   > 0) print (l == "" ? " ." : " " l); next }\
+		/^License: AGPL-3.0-only$$/ { print; while ((getline l < MAIN_LICENSE) > 0) print (l == "" ? " ." : " " l); next }\
+		                           { print }' $@ > $@.tmp && mv $@.tmp $@
 
 deb/build/debian/% : deb/template/%.m4
 	mkdir -pv $(@D) && m4 -I"$(BRANDING_DIR)" $(M4_PARAMS) -D M4_PACKAGE_VERSION=$(PACKAGE_VERSION)$(DEB_RELEASE_SUFFIX) $< > $@
