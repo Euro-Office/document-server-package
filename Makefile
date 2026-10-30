@@ -255,7 +255,7 @@ LINUX_DEPS_CLEAN += common/documentserver-example/systemd/*.service
 
 LINUX_DEPS += $(basename $(wildcard common/documentserver/bin/*.sh.m4))
 
-ifneq ($(COMPANY_NAME_LOW),onlyoffice)
+ifneq ($(COMPANY_NAME_LOW),euro-office)
 LINUX_DEPS := $(filter-out common/documentserver/bin/documentserver-pluginsmanager.sh,$(LINUX_DEPS))
 PLUGIN_MANAGER_FILE := $(wildcard common/documentserver/bin/documentserver-pluginsmanager.sh.m4)
 endif
@@ -503,7 +503,7 @@ $(RPM): $(COMMON_DEPS) $(LINUX_DEPS) documentserver documentserver-example
 		$(PACKAGE_NAME).spec
 
 M4_PARAMS += -D M4_DS_EXAMPLE_ENABLE=1
-ifeq ($(COMPANY_NAME_LOW),onlyoffice)
+ifeq ($(COMPANY_NAME_LOW),euro-office)
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=true
 else
 M4_PARAMS += -D M4_DS_PLUGIN_INSTALLATION=false
