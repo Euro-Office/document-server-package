@@ -153,14 +153,12 @@ rm -rf "%{buildroot}"
 %defattr(440, ds, ds, 555)
 %{_localstatedir}/www/%{_ds_prefix}*/*
 
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/npm/json
+%attr(550, root, root) %{_localstatedir}/www/%{_ds_prefix}/npm/json
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/DocService/docservice
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/converter
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/Metrics/metrics
 %{?adminpanel:%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/AdminPanel/server/adminpanel}
-%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
 %if %{defined example}
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}-example/example
 %endif
@@ -177,6 +175,18 @@ rm -rf "%{buildroot}"
 
 %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/*.so*
 %attr(744, root, root) %{_bindir}/documentserver-*.sh
+# The scripts installed into /usr/bin are owned by root and run these programs,
+# so the programs and every directory on the way down to them are root owned
+# too: ds may execute them but neither rewrite them nor rename them, or a
+# directory holding them, aside from a writable parent.
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/npm
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/tools
+%dir %attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin
+%attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/tools/*
+%attr(755, root, root) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/x2t
 %attr(-, root, root) %{_sysconfdir}/logrotate.d/*
 %attr(-, root, root) %{_sysconfdir}/nginx/%{nginx_conf_d}/*
 %attr(-, root, root) %{_sysconfdir}/nginx/includes/*
