@@ -45,7 +45,7 @@ location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps\/apps\/[^/]+\/(main|m
   alias M4_DS_ROOT/$2;
 }
 
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries)(\/.*)$ {
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts|dictionaries|x2t)(\/.*)$ {
   add_header Cache-Control "public, max-age=31536000, immutable" always;
   # gzip_static on;
   alias M4_DS_ROOT/$2$3;
