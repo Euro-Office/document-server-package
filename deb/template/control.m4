@@ -13,15 +13,11 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
   certbot,
   coreutils,
   curl,
-  libasound2 | libasound2t64,
   libcairo2,
   libcurl3 | libcurl4,
   libcurl3-gnutls,
-  libgtk-3-0,
   libstdc++6 (>= 4.8.4),
   libxml2,
-  libxss1,
-  libxtst6,
   logrotate,
   nginx-extras (>= 1.3.13),
   postgresql-client (>= 9.1) | mysql-client | mysql-community-client | mariadb-client,
@@ -29,7 +25,6 @@ ifelse(eval(ifelse(M4_PRODUCT_NAME,documentserver-ee,1,0)||ifelse(M4_PRODUCT_NAM
 `  redis-tools,'
 ,)dnl
   ttf-mscorefonts-installer,
-  xvfb,
   openssl,
   xxd,
   zlib1g
