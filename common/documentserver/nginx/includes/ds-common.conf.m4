@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: Euro-Office contributors
+# Modified by Euro-Office contributors, see MODIFICATIONS.txt
 ## Increase this if you want to upload large attachments
 client_max_body_size 100m;
 
@@ -5,6 +7,7 @@ underscores_in_headers on;
 
 gzip on;
 gzip_vary on;
+gzip_proxied any;
 gzip_min_length 1024;
 gzip_comp_level 5;
 gzip_disable "msie6";
