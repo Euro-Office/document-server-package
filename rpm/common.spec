@@ -157,6 +157,7 @@ rm -rf "%{buildroot}"
 %{_localstatedir}/www/%{_ds_prefix}*/*
 
 %attr(550, root, root) %{_localstatedir}/www/%{_ds_prefix}/npm/json
+%attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/node
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/DocService/docservice
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/converter
 %attr(550, ds, ds) %{_localstatedir}/www/%{_ds_prefix}/server/FileConverter/bin/docbuilder
