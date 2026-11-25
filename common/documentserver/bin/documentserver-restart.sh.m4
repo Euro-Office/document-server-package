@@ -6,7 +6,7 @@
 if pgrep -x "systemd" > /dev/null; then
     systemctl restart ds-docservice ds-converter
 elif pgrep -x "supervisord" > /dev/null; then
-    supervisorctl restart docservice converter
+    supervisorctl restart ds:docservice ds:converter
 else
     echo "documentserver-restart.sh: no supported init found (systemd/supervisord)" >&2
     exit 1
